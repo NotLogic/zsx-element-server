@@ -1,44 +1,30 @@
 <template>
   <div class="tags-page-opened-outer">
     <div class="close-tag">
-      <Dropdown @on-click="clickDropdown">
-        <Button type="primary">
-            菜单选项
-            <Icon type="ios-arrow-down"></Icon>
-        </Button>
-        <DropdownMenu slot="list">
-            <DropdownItem name="closeAll">关闭所有</DropdownItem>
-            <DropdownItem name="closeOther">关闭其他</DropdownItem>
-        </DropdownMenu>
-      </Dropdown>
+      <el-dropdown @command="clickDropdown">
+        <el-button type="primary" icon="el-icon-arrow-down" size="small">菜单选项</el-button>
+        <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="closeAll">关闭所有</el-dropdown-item>
+            <el-dropdown-item command="closeOther">关闭其他</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
     </div>
     <div class="tags-page-opened" id="scroll-wrapper">
-      <Tag
+      <el-tag
         v-for="item in pageOpenedList"
         :key="item.name"
-        type="dot"
         :closable="item.name==='home' ? false : true"
-        :color="currentPageName===item.name ? 'primary' : 'default'"
-        :name="item.name"
+        size="medium"
+        style="margin-right: 10px;cursor: pointer;"
+        :type="currentPageName===item.name ? '' : 'info'"
         @click.native="openPage(item.name)"
-        @on-close="closeTag">{{item.meta.title}}</Tag>
-      <!-- <ul id="scroller" :style="'width:' + scrollerWidth + 'px'">
-        <li v-for="item in pageOpenedList" :key="item.name" class="scroll-item">
-          <Tag
-            type="dot"
-            :closable="item.name==='home' ? false : true"
-            :color="currentPageName===item.name ? 'primary' : 'default'"
-            :name="item.name"
-            @click.native="openPage(item.name)"
-            @on-close="closeTag">{{item.meta.title}}</Tag>
-        </li>
-      </ul> -->
+        @close="closeTag(item.name)">{{item.meta.title}}</el-tag>
     </div>
   </div>
 </template>
 
 <script>
-  import {getParentRouterNameByName} from '@/libs/util'
+  import {getParentRouterNameByName} from '@/libs/util/util'
   export default {
     name: 'tagsPageOpened',
     props: {
@@ -46,7 +32,6 @@
     },
     data () {
       return {
-        // currentPageName: this.$route.name,
         scrollerWidth: 500,
         myScroll: null,
       }
@@ -57,7 +42,7 @@
       }
     },
     methods: {
-      closeTag (event, name) {
+      closeTag (name) {
         let vm = this
         // 移除标签  会修改 pageOpenedList 
         vm.$store.commit('removeTag', name)
@@ -149,7 +134,7 @@
 <style scoped>
   .tags-page-opened-outer{
     position: relative;
-    padding: 0 15px;
+    padding: 0 10px;
     height: 40px;
     line-height: 40px;
     background: #f0f0f0;
@@ -167,7 +152,6 @@
   .tags-page-opened{
     margin-right: 110px;
     height: 40px;
-    /* background-color: aqua; */
     overflow: hidden;
   }
   /* 滚动设置 */

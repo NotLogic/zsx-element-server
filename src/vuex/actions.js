@@ -1,6 +1,6 @@
 import http from '@/libs/http'
 import http2 from '@/libs/http2'
-import util from '@/plugins/util'
+import util from '@/libs/util'
 import router from '@/router'
 import {appRoutes,errorRoutes} from '@/router/routes'
 

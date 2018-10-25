@@ -1,4 +1,4 @@
-import util from '@/plugins/util'
+import util from '@/libs/util'
 import { appRoutes } from '@/router/routes'
 // 从路由中初始化左侧菜单数据
 export function updateMenulist (state,permissionRoutes) {

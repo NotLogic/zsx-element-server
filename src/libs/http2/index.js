@@ -1,6 +1,6 @@
 import axios from 'axios'
 import router from '@/router'
-import {Message,Modal} from 'element-ui'
+import {Message,MessageBox} from 'element-ui'
 import store from '@/vuex'
 import qs from 'querystring'
 const TIME_OUT = 10000
@@ -25,14 +25,12 @@ http.interceptors.response.use(function (response) {
   if(response.status==200){
     var resData = response.data
     if(resData.code==-1){
-      Modal.confirm({
-        title: resData.message || '登录超时请重新登录',
-        content: '点击“取消”将留在当前页，点击“确定”将转向登录页。',
-        onOk: function(){
+      if(resData.code==-1){
+        MessageBox.confirm('点击“取消”将留在当前页，点击“确定”将转向登录页。',resData.message || '登录超时请重新登录').then(function(){
           router.push({name: 'login'})
           store.dispatch('exitLogin')
-        }
-      })
+        })
+      }
     }
   }
   return response

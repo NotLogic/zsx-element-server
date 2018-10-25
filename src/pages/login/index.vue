@@ -92,12 +92,23 @@
                 vm.$store.dispatch('getAuth',authParams).then(res=>{
                   vm.loginSuccess()
                   vm.$router.push({name: 'home'})
-                  vm.$Message.success('登录成功')
+                  vm.$message({
+                    showClose: true,
+                    type: 'success',
+                    message: '登录成功'
+                  });
                 }).catch(err=>{
-                  vm.$Message.info(vm.noAuthTxt)
+                  vm.$message({
+                    showClose: true,
+                    message: vm.noAuthTxt
+                  });
                 })
               }else{
-                vm.$Message.error(vm.loginErrTxt)
+                vm.$message({
+                  showClose: true,
+                  type: 'error',
+                  message: vm.loginErrTxt,
+                });
               }
             })
           }

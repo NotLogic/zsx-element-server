@@ -1,17 +1,12 @@
 <template>
-  <div class="zsx-main main" id="main">
-    <div class="side-menu" :style="{left: hideMenuText ? '-200px' : '0'}">
-      <div class="logo">
-        <!-- <img src="/static/images/logo.png" alt=""> -->
-      </div>
-      <sidebar :menuList="menuList"></sidebar>
+  <div class="zsx-main">
+    <div class="side-menu" :style="{width: hideMenuText ? '64px' : '200px'}">
+      <sidebar :menuList="menuList" :isCollapse="hideMenuText"></sidebar>
     </div>
-    <div class="all-right" :style="{paddingLeft: hideMenuText ? '0' : '200px'}">
+    <div class="all-right" :style="{left: hideMenuText ? '64px' : '200px'}">
       <div class="main-header">
         <div class="navicon-con">
-          <Button type="text" @click="toggleClick" :style="{transform: 'rotateZ(' + (this.hideMenuText ? '-90' : '0') + 'deg)'}">
-            <Icon type="md-reorder" size="32"></Icon>
-          </Button>
+          <el-button type="text" icon="el-icon-back" @click="toggleClick" :style="{transform: 'rotateZ(' + (this.hideMenuText ? '-180' : '0') + 'deg)'}"></el-button>
         </div>
         <div class="header-middle-con">
           <div class="main-breadcrumb">
@@ -24,76 +19,75 @@
             <strong>{{agentAddress}}</strong>
             <span>代理商</span>
           </span>
-          <Dropdown @on-click="clickDropdown" style="margin-right: 30px;">
-            <Button type="text">
+          <el-dropdown @command="clickDropdown" style="margin-right: 30px;">
+            <el-button type="text" size="small">
               <span>{{user.nickName || user.loginName}}</span>
-              <Icon type="ios-arrow-down"></Icon>
-            </Button>
-            <DropdownMenu slot="list">
-              <DropdownItem name="modify">修改昵称/密码</DropdownItem>
-              <DropdownItem name="logout">注销</DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-          <!-- <Button type="text" class="btn-logout" icon="log-out" size="large" style="margin-right: 20px;" @click="exitToLogin">注销</Button> -->
+              <i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="modify">修改昵称/密码</el-dropdown-item>
+              <el-dropdown-item command="logout">注销</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </div>
       </div>
-      <!-- 已打开过页面的快捷导航 -->      
-      <tags-page-opened :pageOpenedList="pageOpenedList"></tags-page-opened>
+      <!-- 已打开过页面的快捷导航 -->
+      <div class="quick-menu">
+        <tags-page-opened :pageOpenedList="pageOpenedList"></tags-page-opened>
+      </div>
       <!-- 单页内容展示区域 -->
-      <div class="single-page" :style="{left:hideMenuText?0:'200px'}">
-        <div class="single-box" id="single-box">
-          <keep-alive :include="cachePage">
-            <router-view></router-view>
-          </keep-alive>
-        </div>
+      <div class="single-page">
+        <keep-alive :include="cachePage">
+          <router-view></router-view>
+        </keep-alive>
       </div>
-      <div class="copyright" :style="{left:hideMenuText?0:'200px'}">
+      <div class="copyright">
         Copyright © 深圳市众善行文化传播有限公司版权所有
       </div>
     </div>
 
     <!-- 修改昵称密码 -->
-    <Modal v-model="dialogShow" title="修改昵称/密码" :mask-closable="false" @on-cancel="resetDialogForm('formDialog')">
-      <Form :model="formDialog" ref="formDialog" :rules="rules" :label-width="80">
-        <Row>
-          <Col span="12">
-            <FormItem label="账号" prop="loginName">
-              <Input v-model="formDialog.loginName" placeholder="请输入账号" disabled></Input>
-            </FormItem>
-          </Col>
-          <Col span="12">
-            <FormItem label="昵称" prop="nickName">
-              <Input v-model="formDialog.nickName" placeholder="请输入昵称"></Input>
-            </FormItem>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="12">
-            <FormItem label="修改密码">
-              <Select v-model="passType" placeholder="请选择" style="width: 100px;">
-                <Option v-for="item in type" :value="item.value" :key="item.value">{{ item.label }}</Option>
-              </Select>
-            </FormItem>
-          </Col>
-        </Row>
-        <Row v-if="passType==1">
-          <Col span="12">
-            <FormItem label="密码" prop="loginPass">
-              <Input v-model="formDialog.loginPass" placeholder="请输入密码" type="password"></Input>
-            </FormItem>
-          </Col>
-          <Col span="12">
-            <FormItem label="确认密码">
-              <Input v-model="loginPass" placeholder="请确认密码" type="password"></Input>
-            </FormItem>
-          </Col>
-        </Row>
-      </Form>
+    <el-dialog :visible.sync="dialogShow" title="修改昵称/密码"  @closed="resetDialogForm('formDialog')">
+      <el-form :model="formDialog" ref="formDialog" :rules="rules" label-width="80px">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="账号" prop="loginName">
+              <el-input v-model="formDialog.loginName" placeholder="请输入账号" disabled></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="昵称" prop="nickName">
+              <el-input v-model="formDialog.nickName" placeholder="请输入昵称"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="修改密码">
+              <el-select v-model="passType" placeholder="请选择" style="width: 100px;">
+                <el-option v-for="item in type" :key="item.value" :value="item.value" :label="item.label"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row v-if="passType==1">
+          <el-col :span="12">
+            <el-form-item label="密码" prop="loginPass">
+              <el-input v-model="formDialog.loginPass" placeholder="请输入密码" type="password"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="确认密码">
+              <el-input v-model="loginPass" placeholder="请确认密码" type="password"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
       <div slot="footer">
-        <Button @click="resetDialogForm('formDialog')">重置</Button>
-        <Button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading">提交</Button>
+        <el-button @click="resetDialogForm('formDialog')">重置</el-button>
+        <el-button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading">提交</el-button>
       </div>
-    </Modal>
+    </el-dialog>
   </div>
 </template>
 
@@ -188,20 +182,16 @@
     methods: {
       exitToLogin () {
         let vm = this
-        vm.$Modal.confirm({
-          title: '确认退出',
-          content: '点击“取消”将留在当前页，点击“确定”将转向登录页。',
-          onOk: function () {
-            vm.$http.get(vm.exitUrl).then(res=>{
-              if(res&&res.data){
-                var resData = res.data
-                if(resData.code==1){
-                  vm.$Message.success('退出成功！')
-                  vm.$store.dispatch('exitLogin')
-                }
+        vm.$confirm('点击“取消”将留在当前页，点击“确定”将转向登录页。','确定退出登录').then(function(){
+          vm.$http.get(vm.exitUrl).then(res=>{
+            if(res&&res.data){
+              var resData = res.data
+              if(resData.code==1){
+                vm.$message.success('退出成功！')
+                vm.$store.dispatch('exitLogin')
               }
-            })
-          }
+            }
+          })
         })
       },
       toggleClick (e) {
@@ -310,75 +300,49 @@
 </script>
 
 <style scoped>
-  .main .side-menu{
+  .side-menu{
     position: absolute;
     top: 0;
     height: 100%;
     width: 200px;
-    /* background: rgb(73, 80, 96); */
-    background: #515a6e;
     z-index: 1;
-    /* overflow: auto; */
     overflow: hidden;
+    background-color: aqua;
     transition: left .3s;
   }
-  .side-menu .logo{
-    padding: 10px 0;
-    /* text-align: center; */
-  }
-  .side-menu .logo img{
-    /* max-width: 80%; */
-    max-width: 100%;
-  }
-  .main .all-right{
-    box-sizing: border-box;
+  .all-right{
     position: absolute;
-    padding-left: 200px;
     top: 0;
-    width: 100%;
-    height: 100%;
-    transition: padding-left .3s;
+    bottom: 0;
+    left: 200px;
+    right: 0;
+    transition: left .3s;
   }
-  .main .all-right .main-header{
-    height: 60px;
-    line-height: 60px;
-    background: #fff;
+  .all-right .main-header{
+    height: 59px;
+    line-height: 59px;
     border-bottom: 1px solid #eee;
   }
   .navicon-con{float: left}
   .header-middle-con{float: left}
   .header-avator-con{float: right}
-  .main .all-right .single-page{
-    box-sizing: border-box;
+  .all-right .single-page{
     position: absolute;
-    top:100px;
-    left: 200px;
-    right: 0;
-    bottom: 60px;
-    background: #f5f7f9;
-    overflow: auto;
-    padding: 10px;
-    transition: left .3s;
-    overflow: auto;
-  }
-  .single-box{
-    background-color: #fff;
-    padding: 10px;
-    height: 100%;
+    top:110px;
+    left: 10px;
+    right: 10px;
+    bottom: 70px;
     border: 1px solid #eee;
+    padding: 10px;
     overflow: auto;
-    /* background: url('../../assets/images/welcome.jpg') no-repeat center;
-    background-size: cover; */
   }
-  .main .all-right .copyright{
+  .all-right .copyright{
     position: absolute;
     height: 60px;
     bottom: 0;
     right: 0;
-    left: 200px;
+    left: 0;
     text-align: center;
     line-height: 60px;
-    background: #f5f7f9;
-    transition: left .3s;
   }
 </style>

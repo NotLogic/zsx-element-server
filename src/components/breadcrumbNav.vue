@@ -1,10 +1,9 @@
 <template>
-  <Breadcrumb >
-    <template v-for="(item, index) in currentPath">
-      <BreadcrumbItem v-if="currentPath.length === 3 && index === 1" :key="item.name">{{item.title}}</BreadcrumbItem>
-      <BreadcrumbItem v-else :to="{name: item.name}" :key="item.name">{{item.title}}</BreadcrumbItem>
+  <el-breadcrumb>
+    <template v-for="item in currentPath">
+      <el-breadcrumb-item :to="{name: item.name}" :key="item.name">{{item.title}}</el-breadcrumb-item>
     </template>
-  </Breadcrumb>
+  </el-breadcrumb>
 </template>
 
 <script>

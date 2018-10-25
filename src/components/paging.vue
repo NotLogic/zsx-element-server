@@ -5,9 +5,17 @@
 -->
 <template>
   <div class="wrapper-pagination">
-    <Button :class="{rotate: loading}" :disabled="loading" shape="circle" icon="md-sync" style="margin-right: 10px;" @click="paging"></Button>
+    <el-button :class="{rotate: loading}" size="small" :disabled="loading" circle icon="el-icon-refresh" style="margin-right: 10px;" @click="paging"></el-button>
     <div class="pager-wrapper">
-      <Page :total="total" transfer show-sizer show-elevator show-total :current="current" :page-size="size" :placement="placement" :page-size-opts="pageSizeOpts" @on-change="pagingNumChange" @on-page-size-change="pagingSizeChange"></Page>
+      <el-pagination :total="total" 
+        layout="total,  prev, pager, next, sizes, jumper"
+        :current-page.sync="current"
+        :page-size="size"
+        :placement="placement"
+        :page-sizes="pageSizeOpts"
+        @on-change="pagingNumChange"
+        @on-page-size-change="pagingSizeChange">
+      </el-pagination>
     </div>
   </div>
 </template>

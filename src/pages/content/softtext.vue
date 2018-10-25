@@ -145,8 +145,7 @@
           </Col>
         </Row>
         <div style="width:520px;margin:0 auto;">
-          <!-- <ueditor v-model="formDialog.content" :config="myConfig"></ueditor> -->
-          <ueditor2 v-model="formDialog.content" :config="myConfig"></ueditor2>
+          <ueditor v-model="formDialog.content" :config="myConfig"></ueditor>
         </div>
       </Form>
       <div slot="footer">
@@ -263,14 +262,12 @@
   import paging from '@/components/paging'
   import page from '@/mixins/page'
   import ueditor from '@/components/ueditor'
-  import ueditor2 from '@/components/ueditor2'
   export default {
     name: 'softtext',
     components: {
       mainTable,
       paging,
-      ueditor,
-      ueditor2
+      ueditor
     },
     mixins: [page],
     data: function () {

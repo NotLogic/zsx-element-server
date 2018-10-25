@@ -181,8 +181,7 @@
         </Row>
         <Row  v-show="formDialog.type==1">
           <Col span="24">
-            <!-- <ueditor v-model="formDialog.adContent" :config="myConfig"></ueditor> -->
-            <ueditor2 v-model="formDialog.adContent" :config="myConfig"></ueditor2>
+            <ueditor v-model="formDialog.adContent" :config="myConfig"></ueditor>
           </Col>
         </Row>
       </el-form>
@@ -286,14 +285,12 @@
   import paging from '@/components/paging'
   import page from '@/mixins/page'
   import ueditor from '@/components/ueditor'
-  import ueditor2 from '@/components/ueditor2'
   export default {
     name: 'ad',
     components: {
       mainTable,
       paging,
       ueditor,
-      ueditor2,
     },
     mixins: [page],
     data () {

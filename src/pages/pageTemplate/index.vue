@@ -1,22 +1,22 @@
 <template>
-  <div class="template">
-    <Form :model="formSearch" ref="formSearch" inline :label-width="60">
+  <div class="page-template">
+    <el-form :model="formSearch" ref="formSearch" inline label-width="60px">
       
-      <Button type="default" style="margin:5px 8px 24px 0;" @click="resetSearch('formSearch')" :disabled="pageLoading" size="small">{{label.clear}}</Button>
-      <Button type="primary" style="margin: 5px 8px 24px 0;" @click="submitSearch('formSearch')" :disabled="pageLoading" size="small">{{label.search}}</Button>
-      <Button type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="small">{{label.add}}</Button>
-    </Form>
+      <el-button type="default" style="margin:5px 8px 24px 0;" @click="resetSearch('formSearch')" :disabled="pageLoading" size="mini">{{label.clear}}</el-button>
+      <el-button type="primary" style="margin: 5px 8px 24px 0;" @click="submitSearch('formSearch')" :disabled="pageLoading" size="mini">{{label.search}}</el-button>
+      <el-button type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="mini">{{label.add}}</el-button>
+    </el-form>
     <main-table :columns="columns" :data="pager.data"></main-table>
     <paging @changePager="changePager" @paging="paging" :total="pager.total" :current="pager.current"></paging>
-    <Modal v-model="dialogShow" :title="label[currDialog]" :mask-closable="false" @on-cancel="resetDialogForm('formDialog')">
-      <Form :model="formDialog" ref="formDialog" :rules="rules" :label-width="80">
+    <el-dialog :visible.sync="dialogShow" :title="label[currDialog]" width="750px" @closed="resetDialogForm('formDialog')">
+      <el-form :model="formDialog" ref="formDialog" :rules="rules" label-width="80px">
         
-      </Form>
+      </el-form>
       <div slot="footer">
-        <Button @click="resetDialogForm('formDialog')">{{label.clear}}</Button>
-        <Button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading">{{label.submit}}</Button>
+        <el-button @click="resetDialogForm('formDialog')" size="small">{{label.clear}}</el-button>
+        <el-button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading" size="small">{{label.submit}}</el-button>
       </div>
-    </Modal>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -24,7 +24,7 @@
   import paging from '@/components/paging'
   import page from '@/mixins/page'
   export default {
-    name: 'template',
+    name: 'page-template',
     mixins: [page],
     components: {
       mainTable,
