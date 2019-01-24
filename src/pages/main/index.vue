@@ -187,7 +187,11 @@
             if(res&&res.data){
               var resData = res.data
               if(resData.code==1){
-                vm.$message.success('退出成功！')
+                vm.$message({
+                  showClose: true,
+                  type: 'success',
+                  message: '退出成功！'
+                });
                 vm.$store.dispatch('exitLogin')
               }
             }

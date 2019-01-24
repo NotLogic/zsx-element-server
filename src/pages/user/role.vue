@@ -1,81 +1,106 @@
 <template>
   <div class="role">
-    <Form :model="formSearch" ref="formSearch" inline :label-width="60">
+    <el-form :model="formSearch" ref="formSearch" inline label-width="60px">
       
-      <!-- <Button type="default" style="margin:5px 8px 24px 0;" @click="resetSearch('formSearch')" :disabled="pageLoading" size="small">{{label.clear}}</Button>
-      <Button type="primary" style="margin: 5px 8px 24px 0;" @click="submitSearch('formSearch')" :disabled="pageLoading" size="small">{{label.search}}</Button> -->
-      <Button v-if="hasPerm('role:add')" type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="small">{{label.add}}</Button>
-    </Form>
-    <mainTable :columns="columns" :data="pager.data" :loading="pageLoading"></mainTable>
+      <el-button v-if="hasPerm('role:add')" type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="mini">{{label.add}}</el-button>
+    </el-form>
+    
+    <el-table
+      :data="pager.data"
+      border
+      style="width: 100%">
+      <el-table-column
+        prop="roleValue"
+        label="角色编码"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="roleName"
+        label="角色名称"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="roleDesc"
+        label="角色描述">
+      </el-table-column>
+      <el-table-column
+        prop="createTime"
+        label="创建时间">
+      </el-table-column>
+      <el-table-column
+        prop="modifyTime"
+        label="修改时间">
+      </el-table-column>
+      <el-table-column
+        prop="action"
+        fixed="right"
+        label="操作"
+        width="250">
+        <template slot-scope="scope">
+          <el-button v-if="hasPerm('role:perm')" type="success" @click="previewPerm(scope.row.id)" size="mini">权限</el-button>
+          <el-button v-if="hasPerm('role:edit')" type="primary" @click="editRow(scope.row)" size="mini">编辑</el-button>
+          <el-button v-if="hasPerm('role:delete')" type="danger" @click="delBtnClick(scope.row.id)" size="mini">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
     <paging @changePager="changePager" @paging="paging" :total="pager.total" :current="pager.current" :loading="pageLoading"></paging>
-    <Modal v-model="dialogShow" :title="label[currDialog]" :mask-closable="false" @on-cancel="resetDialogForm('formDialog')">
-      <Form :model="formDialog" ref="formDialog" :rules="rules" :label-width="80">
-        <Row>
-          <Col span="12">
-            <FormItem label="角色编码" prop="roleValue">
-              <Select v-if="currDialog=='edit'" v-model="formDialog.roleValue" placeholder="请选择">
-                <Option v-for="item in role" :value="item.value" :key="item.value">{{ item.label }}</Option>
-              </Select>
-              <Input v-else v-model="formDialog.roleValue" placeholder="请输入角色值"></Input>
-            </FormItem>
-          </Col>
-          <Col span="12">
-            <FormItem label="角色名称" prop="roleName">
-              <Input v-model="formDialog.roleName" placeholder="请输入角色名称"></Input>
-            </FormItem>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="12">
-            <FormItem label="角色描述" prop="roleDesc">
-              <Input v-model="formDialog.roleDesc" placeholder="请输入角色描述"></Input>
-            </FormItem>
-          </Col>
-        </Row>
-      </Form>
+
+    <el-dialog :visible.sync="dialogShow" :title="label[currDialog]" width="750px" :mask-closable="false" @on-cancel="resetDialogForm('formDialog')">
+      <el-form :model="formDialog" ref="formDialog" :rules="rules" label-width="80px">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="角色编码" prop="roleValue">
+              <el-input :disabled="currDialog=='edit'" v-model="formDialog.roleValue" placeholder="请输入角色值" size="small"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="角色名称" prop="roleName">
+              <el-input v-model="formDialog.roleName" placeholder="请输入角色名称" size="small"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="角色描述" prop="roleDesc">
+              <el-input v-model="formDialog.roleDesc" placeholder="请输入角色描述" size="small"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
       <div slot="footer">
-        <Button @click="resetDialogForm('formDialog')">{{label.clear}}</Button>
-        <Button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading">{{label.submit}}</Button>
+        <el-button @click="resetDialogForm('formDialog')" size="small">{{label.clear}}</el-button>
+        <el-button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading" size="small">{{label.submit}}</el-button>
       </div>
-    </Modal>
+    </el-dialog>
 
     <!-- 查看权限 -->
-    <Modal v-model="permShow" title="权限" @on-cancle="resetPerm">
-      <!-- <p>
-         <Checkbox
-          :indeterminate="indeterminate"
-          :value="checkAll"
-          @click.prevent.native="handleCheckAll">全选</Checkbox>
-      </p> -->
-      <!-- <Tree ref="permTree" :data="permTreeData" show-checkbox @on-check-change="permCheckChange"></Tree> -->
-      <p>
+    <el-dialog :visible.sync="permShow" title="权限" width="500px" top="50px" @closed="resetPerm">
+      <div>
         <el-checkbox :indeterminate="indeterminate" v-model="checkAll" @change="handleCheckAll">全选</el-checkbox>
-      </p>
+      </div>
       <el-tree
         :data="permTreeData"
         show-checkbox
         node-key="id"
         ref="permTree"
-        @check-change="permCheckChange2"
+        @check-change="permCheckChange"
         highlight-current>
       </el-tree>
-
       <div slot="footer">
-        <Button @click="resetPerm()">清空</Button>
-        <Button type="primary" @click="submitPerm()" :loading="permSubmitLoading">确定</Button>
+        <el-button @click="resetPerm()" size="small">清空</el-button>
+        <el-button type="primary" @click="submitPerm()" size="small" :loading="permSubmitLoading">确定</el-button>
       </div>
-    </Modal>
+    </el-dialog>
   </div>
 </template>
 <script>
-  import mainTable from '@/components/mainTable'
   import paging from '@/components/paging'
   import page from '@/mixins/page'
   export default {
     name: 'role',
     mixins: [page],
     components: {
-      mainTable,
       paging,
     },
     data(){
@@ -135,67 +160,6 @@
         },
         role: [],
         roleMap: {},
-        columns: [
-          // {
-          //   title: 'ID',
-          //   key: 'id',
-          // },
-          {
-            title: '角色编码',
-            key: 'roleValue',
-          },
-          {
-            title: '角色名称',
-            key: 'roleName',
-          },
-          {
-            title: '角色描述',
-            key: 'roleDesc',
-          },
-          {
-            title: '创建时间',
-            key: 'createTime',
-          },
-          {
-            title: '修改时间',
-            key: 'modifyTime',
-          },
-          {
-            title: '操作',
-            key: 'action',
-            width: 200,
-            align: 'center',
-            fixed: 'right',
-            render: (create, params) => {
-              let vm = this,arr=[],permBtn = create('Button',{
-                props: {
-                  type: 'success',
-                  size: 'small'
-                },
-                style: {
-                  'margin-right': '5px'
-                },
-                on: {
-                  click: function(){
-                    var roleId = params.row.id
-                    vm.currRoleId = roleId
-                    vm.previewPerm(roleId)
-                  }
-                }
-              },'权限')
-              if(vm.hasPerm('role:perm')){
-                arr.push(permBtn)
-              }
-              if(vm.hasPerm('role:edit')){
-                arr.push(vm.createEditBtn(create, params.row))
-              }
-              if(vm.hasPerm('role:delete')){
-                arr.push(vm.createDelBtn(create, params.row.id))
-              }
-              return create('div',arr)
-            }
-          },
-        ],
         rules: {
           roleName: [
             { required: true, message: "角色名称不能为空", trigger: "blur" }
@@ -237,6 +201,7 @@
       // 查看权限
       previewPerm(id){
         var vm=this
+        vm.currRoleId=id;
         var params = {
           url: vm.url.perm,
           method: 'post',
@@ -248,6 +213,7 @@
           if(res&&res.data){
             var resData = res.data
             if(resData.code==1){
+              vm.permShow = true
               var data = resData.data,arr=[]
               data.forEach(item=>{
                 if(typeof item.permId != 'undefined'){
@@ -273,22 +239,16 @@
                   arr2.push(item)
                 }
               })
-              vm.$refs['permTree'].setCheckedKeys(arr2)
-              vm.permsArr = arr
-              vm.permShow = true
+              setTimeout(function(){
+                vm.$refs['permTree'].setCheckedKeys(arr2)
+                vm.permsArr = arr
+              },50)
             }
           }
         })
       },
       // 权限选择变化
-      permCheckChange(data){
-        var idsArr=[]
-        data.forEach(item=>{
-          idsArr.push(item.id)
-        })
-        this.permsArr = idsArr
-      },
-      permCheckChange2(){
+      permCheckChange(){
         var vm = this,arr=[],arr2=[]
         arr = vm.$refs['permTree'].getCheckedKeys()
         arr2 = vm.$refs['permTree'].getHalfCheckedKeys()
@@ -329,8 +289,12 @@
             var resData = res.data
             if(resData.code==1){
               vm.permSubmitLoading = false
-              vm.$Message.success('权限修改成功！')
               vm.permShow = false
+              vm.$message({
+                showClose: true,
+                type: 'success',
+                message: '权限修改成功！'
+              });
             }
           }
         })

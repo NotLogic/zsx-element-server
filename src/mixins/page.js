@@ -161,6 +161,22 @@ const page = {
     }
   },
   methods: {
+    getValByMap(key, map){
+      var txt = ''
+      txt = map[key] ? map[key] : key
+      return txt
+    },
+    getImageUrl(url){
+      var str = ''
+      if(url){
+        if(url.indexOf('http') == -1){
+          str = sessionStorage.imageHost + url
+        }else{
+          str = '' + url
+        }
+      }
+      return str
+    },
     hasPerm(permStr){
       // 关闭权限
       // return true
@@ -172,9 +188,9 @@ const page = {
       }
       var _str = vm.util.trimArray(str.split(':')).join(':')
       var permissionList = vm.$store.state.permissionList
-      permissionList.forEach(item=>{
-        if(item==_str)has = true
-      })
+      if(permissionList.indexOf(_str) != -1){
+        has = true
+      }
       return has
     },
     // 清除缓存
@@ -188,9 +204,16 @@ const page = {
       vm.$http(params).then(res=>{
         if(res&&res.status==200){
           if(res.data.code==1){
-            vm.$Message.success(_txt + '缓存清除成功')
+            vm.$message({
+              showClose: true,
+              type: 'success',
+              message: _txt + '缓存清除成功'
+            });
           }else{
-            vm.$Message.info(res.data.message || '清除失败，请稍后再试')
+            vm.$message({
+              showClose: true,
+              message: res.data.message || '清除失败，请稍后再试'
+            });
           }
         }
       })
@@ -212,7 +235,10 @@ const page = {
           vm.cropperImgSrc = reader.result
         }
       }else{
-        vm.$Message.info(vm.typeErrorTxt)
+        vm.$message({
+          showClose: true,
+          message: vm.typeErrorTxt
+        });
       }
       return false
     },
@@ -223,7 +249,10 @@ const page = {
         var proportion = vm.selfWidth / vm.selfHeight
         vm.initCropper('',proportion)
       }else{
-        vm.$Message.info('使用自定义比例时，请设置有效的宽高值')
+        vm.$message({
+          showClose: true,
+          message: '使用自定义比例时，请设置有效的宽高值'
+        });
       }
     },
     // 初始化裁剪插件
@@ -275,7 +304,10 @@ const page = {
     beSureCropper(){
       var vm = this
       if(!vm.myCropper){
-        vm.$Message.info('请先选择要生成什么图片')
+        vm.$message({
+          showClose: true,
+          message: '请先选择要生成什么图片'
+        });
         return
       }
       var requiredSize = vm.requiredSize,which=vm.which,width=0,height=0
@@ -287,7 +319,10 @@ const page = {
           width = Number(requiredSize[which].split('*')[0])
           height = Number(requiredSize[which].split('*')[1])
         }else{
-          vm.$Message.info('请先选择要生成什么图片')
+          vm.$message({
+            showClose: true,
+            message: '请先选择要生成什么图片'
+          });
           return
         }
       }
@@ -297,10 +332,11 @@ const page = {
       var file = vm.util.dataURLtoFile(imgData,fileName)
       var imgTestResult = vm.imgTest(file)
       if(!imgTestResult.code){
-        vm.$Message.error({
-          content: '您裁剪后的图片不符合要求',
-          duration: 3
-        })
+        vm.$message({
+          showClose: true,
+          type: 'error',
+          message: '您裁剪后的图片不符合要求'
+        });
       }else{
         vm.myBeforeUpload(file)
         vm.resetCropper()
@@ -315,29 +351,9 @@ const page = {
     // 搜索提交
     submitSearch () {
       let vm = this
-      // var pager = vm.pager
-      // var method = pager.searchMethod ? pager.searchMethod : pager.method
-      // var params = {
-      //   url: vm.url.search,
-      //   method: method,
-      // }
-      // if(method=='get' || method=='delete'){
-      //   params.params = vm.formSearch
-      // }else{
-      //   params.data = vm.formSearch
-      // }
-      // // 搜索操作
-      // vm.$http2(params).then(res => {
-      //   var resData = res.data
-      //   pager.data = resData.data && resData.data.records || resData.records || resData.data
-      //   pager.total = resData.data && resData.data.total || resData.total
-      // }).catch(err=>{})
-      // 搜索翻页
       vm.isSearchStatus=true
-      // 点搜索按钮搜第一页，防止搜索结果有多页时，翻页后再次点搜索，当前页不是1可能查不到
       vm.paging(1)
     },
-
     // 新增/编辑主弹出框的提交
     submitDialogForm (name) {
       let vm = this
@@ -370,7 +386,11 @@ const page = {
             vm.dialogSubmitLoading = false
             var resData = res.data
             if(resData.code==1){
-              vm.$Message.success(vm.label[vm.currDialog]+'成功!')
+              vm.$message({
+                showClose: true,
+                type: 'success',
+                message: vm.label[vm.currDialog]+'成功!'
+              });
               if(vm.currDialog=='add'){
                 vm.paging(1);
               }else{
@@ -385,7 +405,11 @@ const page = {
                 vm.updateOther()
               }
             }else{
-              vm.$Message.error(vm.label[vm.currDialog]+'失败: ' + resData.message)
+              vm.$message({
+                showClose: true,
+                type: 'error',
+                message: vm.label[vm.currDialog]+'失败: ' + resData.message
+              });
             }
           }).catch(err=>{
             vm.dialogSubmitLoading = false
@@ -637,6 +661,20 @@ const page = {
         }
       }, '删除')
     },
+    // 点击删除按钮
+    delBtnClick(id,callback){
+      var vm = this
+      vm.$confirm('确认删除这条数据吗？', '确认').then(() => {
+        var obj = {
+          id: id
+        }
+        if(typeof callback == 'function'){
+          callback(obj)
+        }else{
+          vm.delRow(obj)
+        }
+      })
+    },
     delRow (data) {
       var vm = this
       var deleteMethod = vm.pager.deleteMethod
@@ -653,10 +691,18 @@ const page = {
       vm.$http2(params).then(res => {
         var resData = res.data
         if(resData.code==1){
-          vm.$Message.success("删除成功！")
+          vm.$message({
+            showClose: true,
+            type: 'success',
+            message: '删除成功！'
+          });
           vm.paging()
         }else{
-          vm.$Message.error(resData.message)
+          vm.$message({
+            showClose: true,
+            type: 'error',
+            message: resData.message || '删除失败！'
+          });
         }
       }).catch(err=>{
 
@@ -678,7 +724,11 @@ const page = {
             if(typeof callback == 'function'){
               callback(data)
             }else{
-              vm.$Message.error('预览请传回调函数')
+              vm.$message({
+                showClose: true,
+                type: 'error',
+                message: '预览请传回调函数'
+              });
             }
           }
         }
@@ -720,7 +770,11 @@ const page = {
       if (!sessionStorage.chinaJson || !sessionStorage.chinaData) {
         vm.$http.post(vm.addressServer).then(res => {
           if(!res){
-            vm.$Message.error('省市区基础数据获取失败，请在需要使用前按F5刷新页面重试')
+            vm.$message({
+              showClose: true,
+              type: 'error',
+              message: '省市区基础数据获取失败，请在需要使用前按F5刷新页面重试'
+            });
           }else{
             var resData = res && res.data
             if(resData.code==1){

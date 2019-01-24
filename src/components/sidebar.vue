@@ -49,8 +49,9 @@
       menuSelect (name) {
         let vm = this
         // 更新快捷导航
-        vm.$store.dispatch('openNewPage',name)
         sessionStorage.currentPageName = name
+        vm.$store.dispatch('openNewPage',name)
+        vm.$store.dispatch('setCurrentPath',name)
         vm.$router.push({name: name})
       },
     },

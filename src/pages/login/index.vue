@@ -27,7 +27,7 @@
               <el-checkbox v-model="rememberMe">记住密码</el-checkbox>
             </el-form-item>
             <el-form-item>
-              <el-button @click="handleSubmit" style="width: 100%;" type="primary" long>登录</el-button>
+              <el-button @click="handleSubmit" :loading="isLogining" style="width: 100%;" type="primary" long>登录</el-button>
             </el-form-item>
           </el-form>
         </div>
@@ -52,6 +52,7 @@
           "loginName": "",
           "loginPass": "",
         },
+        isLogining: false,
         rules: {
           loginName: [
             { required: true, message: '账号不能为空', trigger: 'blur' }
@@ -77,7 +78,9 @@
             }else{
               params.data = vm.loginForm
             }
+            vm.isLogining = true
             vm.$store.dispatch('Login',params).then(data=>{
+              vm.isLogining = false
               if (data.code == 1) {
                 var sysUser = {}
                 if(data){
@@ -110,6 +113,8 @@
                   message: vm.loginErrTxt,
                 });
               }
+            }).catch(function(){
+              vm.isLogining = false
             })
           }
         })

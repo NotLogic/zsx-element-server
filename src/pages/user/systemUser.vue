@@ -1,108 +1,148 @@
 <template>
   <div class="systemUser">
     <div id="search-wrapper">
-      <Form :model="formSearch" ref="formSearch" inline :label-width="60">
+      <el-form :model="formSearch" ref="formSearch" inline label-width="60px">
         <template v-if="hasPerm('systemUser:search')">
-          <FormItem label="用户">
-            <Input v-model="formSearch.key" placeholder="账号/昵称" size="small" @keydown.native.enter.prevent="submitSearch('formSearch')"></Input>
-          </FormItem>
-          <Button type="default" style="margin:5px 8px 24px 0;" @click="resetSearch('formSearch')" :disabled="pageLoading" size="small">{{label.clear}}</Button>
-          <Button type="primary" style="margin: 5px 8px 24px 0;" @click="submitSearch('formSearch')" :disabled="pageLoading" size="small">{{label.search}}</Button>
+          <el-form-item label="用户" prop="key">
+            <el-input v-model="formSearch.key" placeholder="账号/昵称" size="mini" @keydown.native.enter.prevent="submitSearch('formSearch')"></el-input>
+          </el-form-item>
+          <el-button type="default" style="margin:5px 8px 24px 0;" @click="resetSearch('formSearch')" :disabled="pageLoading" size="mini">{{label.clear}}</el-button>
+          <el-button type="primary" style="margin: 5px 8px 24px 0;" @click="submitSearch('formSearch')" :disabled="pageLoading" size="mini">{{label.search}}</el-button>
         </template>
-        <Button v-if="hasPerm('systemUser:add')" type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="small">{{label.add}}</Button>
-        <Button v-if="hasPerm('systemUser:delete')" type="error" :disabled="batchIdArr.length==0" style="margin: 5px 8px 24px 0;" @click="batchDelete" size="small">批量删除</Button>
-      </Form>
+        <el-button v-if="hasPerm('systemUser:add')" type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="mini">{{label.add}}</el-button>
+        <el-button v-if="hasPerm('systemUser:delete')" type="danger" :disabled="batchIdArr.length==0" style="margin: 5px 8px 24px 0;" @click="batchDelete" size="mini">批量删除</el-button>
+      </el-form>
     </div>
 
-    <!-- <mainTable :columns="columns" :data="pager.data" @updateSelect="updateSelect" :height="tableHeight"></mainTable>
-    <paging @changePager="changePager" @paging="paging" :total="pager.total" :current="pager.current"></paging> -->
+    <!-- :max-height="tableHeight" -->
+    <el-table
+      :data="currentPager.data"
+      @selection-change="updateSelect"
+      border
+      style="width: 100%">
+      <el-table-column
+        type="selection"
+        width="55">
+      </el-table-column>
+      <el-table-column
+        prop="loginName"
+        label="账号"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="nickName"
+        label="昵称 "
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="role"
+        label="角色">
+      </el-table-column>      
+      <el-table-column
+        prop="role"
+        label="代理区域">
+        <template slot-scope="scope">
+          {{getArea(scope.row)}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="action"
+        fixed="right"
+        label="操作"
+        width="250">
+        <template slot-scope="scope">
+          <el-button v-if="hasPerm('systemUser:role')" type="success" @click="previewPerm(scope.row.id)" size="mini">角色</el-button>
+          <el-button v-if="hasPerm('systemUser:edit')" type="primary" @click="editRow(scope.row)" size="mini">编辑</el-button>
+          <el-button v-if="hasPerm('systemUser:delete')" type="danger" @click="delBtnClick(scope.row.id)" size="mini">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
 
-    <main-table :columns="columns" :data="currentPager.data" @updateSelect="updateSelect" :height="tableHeight" :loading="pageLoading"></main-table>
     <paging @changePager="changePager" @paging="paging" :total="currentPager.total" :current="currentPager.current" :loading="pageLoading"></paging>
 
-    <Modal v-model="dialogShow" :title="label[currDialog]" :mask-closable="false" @on-cancel="resetDialogForm('formDialog')">
-      <Form :model="formDialog" ref="formDialog" :rules="rules" :label-width="80">
-        <Row>
-          <Col span="12">
-            <FormItem label="账号" prop="loginName">
-              <Input v-model="formDialog.loginName" placeholder="请输入账号" :disabled="currDialog=='edit'"></Input>
-            </FormItem>
-          </Col>
-          <Col span="12">
-            <Row>
-              <Col :span="8" v-if="currDialog=='edit'">
-                <FormItem label="修改密码">
-                  <Select v-model="passType" placeholder="请选择" style="width: 100px;">
-                    <Option v-for="item in type" :value="item.value" :key="item.value">{{ item.label }}</Option>
-                  </Select>
-                </FormItem>
-              </Col>
-              <Col :span="passSpan" :offset="passSpan==24 ? 0 : 1" v-if="currDialog=='add' || currDialog=='edit' && passType=='1'">
-                <FormItem label="密码" prop="loginPass">
-                  <Input v-model="loginPass" placeholder="请输入密码" type="password"></Input>
-                </FormItem>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="12">
-            <FormItem label="昵称" prop="nickName">
-              <Input v-model="formDialog.nickName" placeholder="请输入账号"></Input>
-            </FormItem>
-          </Col>
-          <Col span="12" v-if="currDialog=='add'">
-            <FormItem label="角色" prop="roles">
-              <Select v-model="roles" placeholder="请选择" multiple>
-                <Option v-for="item in role" :value="item.value" :key="item.value">{{ item.label }}</Option>
-              </Select>
-            </FormItem>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="12">
-            <FormItem label="代理类型" prop="areaType">
-              <Select v-model="formDialog.areaType" placeholder="请选择">
-                <Option v-for="item in areaType" :key="item.value" :value="item.value">{{item.label}}</Option>
-              </Select>
-              </FormItem>
-          </Col>
-          <Col span="12" v-if="formDialog.areaType">
-            <FormItem label="代理地区">
-              <Cascader :data="derail_address_arr" v-model="derail_address_obj" placeholder="请选择地区" :clearabled="false" transfer></Cascader>
-            </FormItem>
-          </Col>
-        </Row>
-      </Form>
+    <el-dialog :visible.sync="dialogShow" :title="label[currDialog]" :mask-closable="false" width="750px" @on-cancel="resetDialogForm('formDialog')">
+      <el-form :model="formDialog" ref="formDialog" :rules="rules" label-width="80px">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="账号" prop="loginName">
+              <el-input v-model="formDialog.loginName" placeholder="请输入账号" size="small" :disabled="currDialog=='edit'"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-row>
+              <el-col :span="8" v-if="currDialog=='edit'">
+                <el-form-item label="修改密码">
+                  <el-select v-model="passType" placeholder="请选择" style="width: 100px;" size="small">
+                    <el-option v-for="item in type" :key="item.value" :value="item.value" :label="item.label"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="passSpan" :offset="passSpan==24 ? 0 : 1" v-if="currDialog=='add' || currDialog=='edit' && passType=='1'">
+                <el-form-item label="密码" prop="loginPass" size="small">
+                  <el-input v-model="loginPass" placeholder="请输入密码" type="password"></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="昵称" prop="nickName">
+              <el-input v-model="formDialog.nickName" size="small" placeholder="请输入账号"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12" v-if="currDialog=='add'">
+            <el-form-item label="角色" prop="roles">
+              <el-select v-model="roles" placeholder="请选择" size="small" multiple>
+                <el-option v-for="item in role" :key="item.value" :value="item.value" :label="item.label"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="代理类型" prop="areaType">
+              <el-select v-model="formDialog.areaType" size="small" placeholder="请选择">
+                <el-option v-for="item in areaType" :key="item.value" :value="item.value" :label="item.label"></el-option>
+              </el-select>
+              </el-form-item>
+          </el-col>
+          <el-col :span="12" v-if="formDialog.areaType">
+            <el-form-item label="代理地区">
+              <el-cascader :options="derail_address_arr" v-model="derail_address_obj" placeholder="请选择地区" :clearabled="false" transfer></el-cascader>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
       <div slot="footer">
-        <Button @click="resetDialogForm('formDialog')">{{label.clear}}</Button>
-        <Button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading">{{label.submit}}</Button>
+        <el-button @click="resetDialogForm('formDialog')">{{label.clear}}</el-button>
+        <el-button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading">{{label.submit}}</el-button>
       </div>
-    </Modal>
+    </el-dialog>
     <!-- 查看角色 -->
-    <Modal v-model="roleShow" title="角色" :mask-closable="false" width="300">
+    <el-dialog :visible.sync="roleShow" title="角色" :mask-closable="false" width="300px">
       <div v-for="(val,key) in roleMap" style="margin-bottom: 15px;">
         <span>{{val}}</span>
         <span style="float: right">
-          <Button v-if="currRoles[key]" type="error" size='small' @click="resultRole('delete',currRoles[key])">{{label.delete}}</Button>
-          <Button v-else size='small' type="primary" @click="resultRole('add',key)">{{label.add}}</Button>
+          <el-button v-if="currRoles[key]" type="danger" size='small' @click="resultRole('delete',currRoles[key])">{{label.delete}}</el-button>
+          <el-button v-else size='small' type="primary" @click="resultRole('add',key)">{{label.add}}</el-button>
         </span>
       </div>
       <div slot="footer">
-        <Button @click="roleShow=false">{{label.close}}</Button>
+        <el-button @click="roleShow=false">{{label.close}}</el-button>
       </div>
-    </Modal>
+    </el-dialog>
   </div>
 </template>
 <script>
-  import mainTable from '@/components/mainTable'
+  // import mainTable from '@/components/mainTable'
   import paging from '@/components/paging'
   import page from '@/mixins/page'
   export default {
     name: 'systemUser',
     mixins: [page],
     components: {
-      mainTable,
+      // mainTable,
       paging,
     },
     data(){
@@ -191,104 +231,6 @@
         cityData: [],
         areaData: [],
         countryData: [{label: "中国", value: 1, children: []}],
-        columns: [
-          {
-            "type": 'selection',
-            "fixed": 'left',
-            "width": 80,
-            "align": 'center'
-          },
-          //  {
-          //   title: 'ID',
-          //   key: 'id',
-          //   sortable: true,
-          // },
-          {
-            title: '账号',
-            key: 'loginName',
-            sortable: true,
-          },
-          {
-            title: '昵称',
-            key: 'nickName',
-            sortable: true,
-          },
-          {
-            title: '角色',
-            key: 'role',
-            sortable: true,
-          },
-          {
-            title: '代理地区',
-            key: 'areaCode',
-            sortable: true,
-            render:(create,params)=>{
-              var vm = this,arr=[]
-              var map = {
-                1: '', 2: ' (省)', 3: ' (市)', 4: ' (区)'
-              }
-              var txt = ''
-              var areaCode=params.row.areaCode
-              var areaType=params.row.areaType
-              if(areaType==0){
-                txt = '非代理用户'
-              }else if(areaType==1){
-                txt = '全国'
-              }else{
-                if(areaType==2){
-                  var provincesId=areaCode;
-                  arr = [provincesId]
-                }else if(areaType==3){
-                    var provincesId = parseInt(areaCode/10000)*10000;
-                    var cityId=areaCode
-                    arr = [provincesId,cityId]
-                  }
-                else if(areaType==4){
-                    var provincesId = parseInt(areaCode/10000)*10000;
-                    var cityId = parseInt(areaCode/100)*100
-                    var areaId = areaCode
-                    arr = [provincesId,cityId,areaId]   
-                }
-                txt = vm.util.getProvinceCityArea(arr,vm.chinaJson,true)
-              }
-              var _txt = map[areaType] ? map[areaType] : ''
-              return create('span', txt + _txt)
-            }
-          },
-          {
-            title: '操作',
-            key: 'action',
-            width: 200,
-            align: 'center',
-            fixed: 'right',
-            render: (create, params) => {
-              let vm = this,arr = []
-              if(vm.hasPerm('systemUser:role')){
-                arr.push(create('Button',{
-                  props: {
-                    type: 'success',
-                    size: 'small'
-                  },
-                  style: {
-                    'margin-right': '5px'
-                  },
-                  on: {
-                    click: function(){
-                      vm.previewPerm(params.row.id)
-                    }
-                  }
-                },'角色'))
-              }
-              if(vm.hasPerm('systemUser:edit')){
-                arr.push(vm.createEditBtn(create, params.row))
-              }
-              if(vm.hasPerm('systemUser:delete')){
-                arr.push(vm.createDelBtn(create, params.row.id))
-              }
-              return create('div',arr)
-            }
-          },
-        ],
         rules: {
           loginName: [
             { required: true, message: '账号不能为空', trigger: 'blur' }
@@ -300,6 +242,24 @@
       }
     },
     methods: {
+      // 获取代理区域
+      getArea(data){
+        var vm=this,txt = ''
+        var areaType = data.areaType,
+          areaCode = data.areaCode
+        if(areaType==0){
+          txt = '非代理用户'
+        }else if(areaType==1){
+          txt = '全国'
+        }else if(areaType==2){
+          txt = '省： ' + vm.util.getProvinceCityArea([areaCode],vm.chinaJson, true)
+        }else if(areaType==3){
+          txt = '市： ' + vm.util.getProvinceCityArea([parseInt(areaCode/10000)*10000,areaCode],vm.chinaJson,true)
+        }else if(areaType==4){
+          txt = '区： ' + vm.util.getProvinceCityArea([parseInt(areaCode/10000)*10000,parseInt(areaCode/100)*100,areaCode],vm.chinaJson,true)
+        }
+        return txt
+      },
       submitDialogForm (name) {
         let vm = this
         vm.$refs[name].validate(function (valid) {
@@ -334,7 +294,11 @@
               vm.dialogSubmitLoading = false
               var resData = res.data
               if(resData.code==1){
-                vm.$Message.success(vm.label[vm.currDialog]+'成功!')
+                vm.$message({
+                  showClose: true,
+                  type: 'success',
+                  message: vm.label[vm.currDialog]+'成功!'
+                });
                 if(vm.currDialog=='add'){
                   vm.paging(1);
                 }else{
@@ -349,7 +313,11 @@
                   vm.updateOther()
                 }
               }else{
-                vm.$Message.error(vm.label[vm.currDialog]+'失败: ' + resData.message)
+                vm.$message({
+                  showClose: true,
+                  type: 'error',
+                  message: vm.label[vm.currDialog]+'失败: ' + resData.message
+                });
               }
             }).catch(err=>{
       
@@ -394,37 +362,41 @@
       resultRole(addOrDelete,id){
         var vm = this
         var isAdd = !!(addOrDelete == 'add')
-        vm.$Modal.confirm({
-          title: '确定操作',
-          content: '确定' + (isAdd ? '添加' : '删除') + '这个角色吗？',
-          onOk: function(){
-            var url = isAdd ? vm.url.bindRole : vm.url.deleteRole
-            var method = isAdd ? 'post' : 'delete'
-            var ajaxData = isAdd ? {
-              roleId: id,
-              sysUserId: vm.currUserId
-            } : {
-              id: id
-            }
-            var params = {
-              url: url,
-              method: method
-            }
-            if(method=='get' || method=='delete'){
-              params.params = ajaxData
-            }else{
-              params.data = ajaxData
-            }
-            vm.$http(params).then(res=>{
-              if(res&&res.data){
-                var resData = res.data
-                if(resData.code==1){
-                  vm.$Message.success((isAdd? '新增' : '删除') + '成功')
-                  vm.previewPerm(vm.currUserId)
-                }
-              }
-            })
+        vm.$confirm('确定' + (isAdd ? '添加' : '删除') + '这个角色吗？', '确定操作', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          var url = isAdd ? vm.url.bindRole : vm.url.deleteRole
+          var method = isAdd ? 'post' : 'delete'
+          var ajaxData = isAdd ? {
+            roleId: id,
+            sysUserId: vm.currUserId
+          } : {
+            id: id
           }
+          var params = {
+            url: url,
+            method: method
+          }
+          if(method=='get' || method=='delete'){
+            params.params = ajaxData
+          }else{
+            params.data = ajaxData
+          }
+          vm.$http(params).then(res=>{
+            if(res&&res.data){
+              var resData = res.data
+              if(resData.code==1){
+                vm.$message({
+                  showClose: true,
+                  type: 'success',
+                  message: (isAdd? '新增' : '删除') + '成功'
+                });
+                vm.previewPerm(vm.currUserId)
+              }
+            }
+          })
         })
       },
       // 重置搜索表单
@@ -449,10 +421,6 @@
       },
       delRow (data) {
         var vm = this;
-        if(!data.id){
-          vm.$Message.error('id获取失败')
-          return
-        }
         var parmas = {
           method: 'post',
           url: vm.url.delete,
@@ -464,36 +432,40 @@
       },
       batchDelete(){
         var vm = this
-        vm.$Modal.confirm({
-          title: '确认',
-          content: '确认删除这些系统用户吗？请考虑清楚，谨慎操作！！！',
-          onOk: function () {
-            var parmas = {
-              method: 'post',
-              url: vm.url.delete,
-              data: {
-                ids: vm.batchIdArr
-              }
+        vm.$confirm('确认删除这些系统用户吗？请考虑清楚，谨慎操作！！！', '确认', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          var parmas = {
+            method: 'post',
+            url: vm.url.delete,
+            data: {
+              ids: vm.batchIdArr
             }
-            vm.batchoperation(parmas)
           }
+          vm.batchoperation(parmas)
         })
       },
       batchoperation(parmas,refresh){
         var vm = this
-        if(typeof parmas != 'object'){
-          vm.$Message.error('传参错误')
-          return
-        }
         parmas.method = parmas.method || 'post'
         vm.$http2(parmas).then(res=>{
           var resData = res.data
           if(resData.code==1){
-            vm.$Message.success('操作成功');
+            vm.$message({
+              showClose: true,
+              type: 'success',
+              message: '操作成功'
+            });
             vm.batchIdArr = []
             vm.paging()
           }else{
-            vm.$Message.error(resData.message);
+            vm.$message({
+              showClose: true,
+              type: 'error',
+              message: resData.message || '批量操作失败'
+            });
           }
         }).catch(err=>{})
       },

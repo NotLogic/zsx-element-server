@@ -13,8 +13,8 @@
         :page-size="size"
         :placement="placement"
         :page-sizes="pageSizeOpts"
-        @on-change="pagingNumChange"
-        @on-page-size-change="pagingSizeChange">
+        @current-change="pagingNumChange"
+        @size-change="pagingSizeChange">
       </el-pagination>
     </div>
   </div>

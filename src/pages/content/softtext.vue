@@ -2,97 +2,95 @@
   <div class="softtext">
     <!-- 高级搜索 -->
     <div id="search-wrapper">
-      <Form :model="formSearch" ref="formSearch" inline :label-width="70">
+      <el-form :model="formSearch" ref="formSearch" inline label-width="80px">
         <template v-if="hasPerm('softtext:search')">
-          <FormItem label="标题" prop="title">
-            <Input v-model="formSearch.title" placeholder="标题" size="small" @keydown.native.enter.prevent="submitSearch('formSearch')"></Input>
-          </FormItem>
-          <FormItem label="是否发布">
-            <Select v-model="formSearch.newsStatus" placeholder="请选择" clearable style="width:150px;" size="small">
-              <Option :value="0">已发布</Option>
-              <Option :value="1">未发布</Option>
-            </Select>
-          </FormItem>
-          <FormItem label="发布时间">
-            <DatePicker type="date" format="yyyy-MM-dd HH:mm:ss" placeholder="点击选择时间" size="small" v-model="searchNewsDate" @on-change="searchNewsDateChange" :clearable="false" transfer></DatePicker>
-          </FormItem>
-          <Button type="default" style="margin:5px 8px 24px 0;" @click="resetSearch('formSearch')" size="small">{{label.clear}}</Button>
-          <Button type="primary" style="margin: 5px 8px 24px 0;" @click="submitSearch('formSearch')" size="small">{{label.search}}</Button>
+          <el-form-item label="标题" prop="title">
+            <el-input v-model="formSearch.title" placeholder="标题" size="mini" @keydown.native.enter.prevent="submitSearch('formSearch')"></el-input>
+          </el-form-item>
+          <el-form-item label="是否发布">
+            <el-select v-model="formSearch.newsStatus" placeholder="请选择" clearable style="width:150px;" size="mini">
+              <el-option value="0" label="已发布"></el-option>
+              <el-option value="1" label="未发布"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="发布时间">
+            <el-date-picker type="date" format="yyyy-MM-dd HH:mm:ss" placeholder="点击选择时间" size="mini" v-model="searchNewsDate" @on-change="searchNewsDateChange" :clearable="false" transfer></el-date-picker>
+          </el-form-item>
+          <el-button type="default" style="margin:5px 8px 24px 0;" @click="resetSearch('formSearch')" size="mini">{{label.clear}}</el-button>
+          <el-button type="primary" style="margin: 5px 8px 24px 0;" @click="submitSearch('formSearch')" size="mini">{{label.search}}</el-button>
         </template>
-        <Button v-if="hasPerm('softtext:add')" type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="small">{{label.add}}</Button>
-        <Button v-if="hasPerm('softtext:delete')" type="error" :disabled="batchIdArr.length==0" style="margin: 5px 8px 24px 0;" @click="batchDelete" size="small">批量删除</Button>
-        <Button v-if="hasPerm('softtext:publish')" type="default" :disabled="batchIdArr.length==0" style="margin: 5px 8px 24px 0;" @click="batchPublish" size="small">批量发布</Button>
-        <Button v-if="hasPerm('softtext:clearCache')" type="warning" style="margin: 5px 8px 24px 0;" @click="clearCache('咨询软文')" size="small">{{label.clearCache}}</Button>
-      </Form>
+        <el-button v-if="hasPerm('softtext:add')" type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="mini">{{label.add}}</el-button>
+        <el-button v-if="hasPerm('softtext:delete')" type="error" :disabled="batchIdArr.length==0" style="margin: 5px 8px 24px 0;" @click="batchDelete" size="mini">批量删除</el-button>
+        <el-button v-if="hasPerm('softtext:publish')" type="default" :disabled="batchIdArr.length==0" style="margin: 5px 8px 24px 0;" @click="batchPublish" size="mini">批量发布</el-button>
+        <el-button v-if="hasPerm('softtext:clearCache')" type="warning" style="margin: 5px 8px 24px 0;" @click="clearCache('咨询软文')" size="mini">{{label.clearCache}}</el-button>
+      </el-form>
     </div>
 
-    <!-- <main-table :columns="columns" :data="pager.data" @updateSelect="updateSelect" :height="tableHeight"></main-table>    
-    <paging @changePager="changePager" @paging="paging" :total="pager.total" :current="pager.current"></paging> -->
+    <!-- <main-table :columns="columns" :data="currentPager.data" @updateSelect="updateSelect" :height="tableHeight" :loading="pageLoading"></main-table> -->
 
-    <main-table :columns="columns" :data="currentPager.data" @updateSelect="updateSelect" :height="tableHeight" :loading="pageLoading"></main-table>
     <paging @changePager="changePager" @paging="paging" :total="currentPager.total" :current="currentPager.current" :loading="pageLoading"></paging>
 
-    <Modal v-model="dialogShow" :title="label[currDialog]" :mask-closable="false" @on-cancel="resetDialogForm('formDialog')" width="600" :styles="{top:'30px'}">
-      <Form :model="formDialog" ref="formDialog" :rules="rules" :label-width="80">
-        <Row>
-          <Col span="24">
-            <FormItem label="标题" prop="title">
-              <Input v-model="formDialog.title" placeholder="请输入标题"></Input>
-            </FormItem>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="12">
-            <FormItem label="来源" prop="newsSrc">
-              <Input v-model="formDialog.newsSrc" placeholder="请输入来源"></Input>
-            </FormItem>
-          </Col>
+    <el-dialog :visible.sync="dialogShow" :title="label[currDialog]" :mask-closable="false" @closed="resetDialogForm('formDialog')" width="700px" top="30px">
+      <el-form :model="formDialog" ref="formDialog" :rules="rules" label-width="80px">
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="标题" prop="title">
+              <el-input v-model="formDialog.title" size="small" placeholder="请输入标题"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="来源" prop="newsSrc">
+              <el-input v-model="formDialog.newsSrc" size="small" placeholder="请输入来源"></el-input>
+            </el-form-item>
+          </el-col>
            <!-- 从后台管理系统添加，类型值固定为100，因为app显示时会按此倒序排列，目前抓取分类值为1~18 -->
-          <!-- <Col span="12">
-            <FormItem label="类型" prop="newsType">
-              <Select v-model="formDialog.newsType" placeholder="请选择" filterable clearable>
-                <Option v-for="item in newsType" :value="item.value" :key="item.value">{{ item.label }}</Option>
-              </Select>
-            </FormItem>
-          </Col> -->
-        </Row>
-        <Row>
-          <Col span="12">
-            <FormItem label="是否置顶" prop="isUp">
-              <Select v-model="formDialog.isUp" placeholder="请选择是否置顶">
-                <Option v-for="item in isUp" :value="item.value" :key="item.value">{{ item.label }}</Option>
-              </Select>
-            </FormItem>
-          </Col>
-          <Col span="12">
-            <FormItem label="点击量" prop="pageViews">
-              <InputNumber :min="0" v-model="formDialog.pageViews"></InputNumber>
-            </FormItem>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="12">
-            <FormItem label="是否发布" prop="newsStatus">
-              <Select v-model="formDialog.newsStatus" placeholder="请选择"  clearable>
-                <Option v-for="item in newsStatus" :value="item.value" :key="item.value">{{ item.label }}</Option>
-              </Select>
-            </FormItem>
-          </Col>
-          <Col span="12" v-if="formDialog.newsStatus==1">
-            <FormItem label="发布时间">
-              <DatePicker type="date" format="yyyy-MM-dd HH:mm:ss" :options="timeOptions" placeholder="点击选择时间" v-model="newsDate" @on-change="newsDateChange" :clearable="false" transfer></DatePicker>
-            </FormItem>
-          </Col>
-        </Row>
+          <!-- <el-col :span="12">
+            <el-form-item label="类型" prop="newsType">
+              <el-select v-model="formDialog.newsType" placeholder="请选择" filterable clearable>
+                <el-option v-for="item in newsType" :value="item.value" :key="item.value">{{ item.label }}</el-option>
+              </el-select>
+            </el-form-item>
+          </el-col> -->
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="是否置顶" prop="isUp">
+              <el-select v-model="formDialog.isUp" size="small" placeholder="请选择是否置顶">
+                <el-option v-for="item in isUp" :value="item.value" :label="item.label" :key="item.value"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="点击量" prop="pageViews">
+              <el-inputNumber :min="0" size="small" v-model="formDialog.pageViews"></el-inputNumber>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="是否发布" prop="newsStatus">
+              <el-select v-model="formDialog.newsStatus" placeholder="请选择" size="small" clearable>
+                <el-option v-for="item in newsStatus" :value="item.value" :label="item.label" :key="item.value"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12" v-if="formDialog.newsStatus==1">
+            <el-form-item label="发布时间">
+              <el-date-picker type="date" format="yyyy-MM-dd HH:mm:ss" size="small" :options="timeOptions" placeholder="点击选择时间" v-model="newsDate" @on-change="newsDateChange" :clearable="false" transfer></el-date-picker>
+            </el-form-item>
+          </el-col>
+        </el-row>
         <!-- 主图 -->
-        <Row>
-            <Col span="24">
+        <el-row>
+            <el-col :span="24">
               <strong style="padding-left: 45px;">上传图片的数量必须为一张或三张</strong><br>
               <p v-if="currDialog=='edit'" style="padding-left: 45px;color: red;">编辑图片需要进行重新选择上传</p>
-              <FormItem label="图片">
-                <Row>
-                  <Col span="6">
-                    <Upload name="file"
+              <el-form-item label="图片">
+                <el-row>
+                  <el-col :span="6">
+                    <el-upload name="file"
                         :action="url.upload"
                         multiple
                         accept=".jpg,.jpeg,.png,.gif"
@@ -101,159 +99,157 @@
                         :on-format-error="handleFormatError"
                         :max-size="6000"
                         :on-exceeded-size="handleMaxSize">
-                      <Button type="default" icon="ios-cloud-upload-outline">选择图片</Button>
-                    </Upload>
-                    <Button type="primary" @click="myUpload" :loading="uploadLoading">
-                      <Tooltip>
+                      <el-button type="default" size="small" icon="el-icon-upload">选择图片</el-button>
+                    </el-upload>
+                    <el-button type="primary" @click="myUpload" size="small" :loading="uploadLoading">
+                      <el-tooltip>
                         <span>确定上传</span>
                         <p slot="content"  style="white-space: normal;">{{imgRequiredTxt}}</p>
-                      </Tooltip>
-                    </Button>
-                    <Button type="primary" @click="cropperDialogShow=true">裁剪图片</Button>
-                  </Col>
-                  <Col span="18">
-                    <Row v-if="editFileUrl.length">
-                      <Col span="8" v-for="(item, index) in editFileUrl" :key="item">
+                      </el-tooltip>
+                    </el-button>
+                    <br>
+                    <el-button type="primary" size="small" @click="cropperDialogShow=true">裁剪图片</el-button>
+                  </el-col>
+                  <el-col :span="18">
+                    <el-row v-if="editFileUrl.length">
+                      <el-col :span="8" v-for="(item, index) in editFileUrl" :key="item">
                         <div class="image-box">
                           <img :src="item" class="ad-img">
                         </div>
-                      </Col>
-                    </Row>
-                    <Row v-else-if="fileUrl.length">
-                      <Col span="8" v-for="(item, index) in fileUrl" :key="item">
+                      </el-col>
+                    </el-row>
+                    <el-row v-else-if="fileUrl.length">
+                      <el-col :span="8" v-for="(item, index) in fileUrl" :key="item">
                         <div class="image-box">
                           <img :src="item" class="ad-img">
                           <div class="demo-upload-list-cover">
-                            <Icon type="ios-trash-outline" @click.native="handleRemove(index)"></Icon>
+                            <i class="el-icon-delete" @click.native="handleRemove(index)"></i>
                           </div>
                         </div>
-                      </Col>
-                    </Row>
+                      </el-col>
+                    </el-row>
                     <div v-else class="image-box">
                       <img :src="defaultUploadImgSrc" class="ad-img">
                     </div>
-                  </Col>
-                </Row>
-              </FormItem>
-            </Col>
-          </Row>
-        <Row>
-          <Col span="24">
-            <FormItem label="内容" prop="content">
-              <Button type="success" @click="previewContent=true" size="small">预览</Button>
-            </FormItem>
-          </Col>
-        </Row>
+                  </el-col>
+                </el-row>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="内容" prop="content">
+              <el-button type="success" @click="previewContent=true" size="small">预览</el-button>
+            </el-form-item>
+          </el-col>
+        </el-row>
         <div style="width:520px;margin:0 auto;">
           <ueditor v-model="formDialog.content" :config="myConfig"></ueditor>
         </div>
-      </Form>
+      </el-form>
       <div slot="footer">
-        <Button @click="resetDialogForm('formDialog')">{{label.clear}}</Button>
-        <Button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading">{{label.submit}}</Button>
+        <el-button @click="resetDialogForm('formDialog')">{{label.clear}}</el-button>
+        <el-button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading">{{label.submit}}</el-button>
       </div>
-    </Modal>
+    </el-dialog>
     <!-- 预览内容 -->
-    <!-- 有时间做成适配手机的样式 -->
-    <!-- <Modal v-model="previewContent" :mask-closable="false" width="375" title="预览内容"> -->
-    <Modal v-model="previewContent" :mask-closable="false" title="预览内容" :styles="{top:'30px'}">
+    <el-dialog :visible.sync="previewContent" :mask-closable="false" title="预览内容" top="30px">
         <div class="preview-editor-content" v-html="formDialog.content"></div>
         <br>
         <div slot="footer">
-          <Button type="primary" @click="previewContent=false">关闭</Button>
+          <el-button type="primary" @click="previewContent=false">关闭</el-button>
         </div>
-    </Modal>
+    </el-dialog>
     <!-- 总体预览 -->
-    <!-- <Modal v-model="previewModal" :mask-closable="false" width="375" title="查看"> -->
-    <Modal v-model="previewModal" :mask-closable="false" title="预览" :styles="{top:'30px'}">
-        <div class="preview-editor-content">
-          <h2>{{previewData.title}}</h2>
-          <div v-html="previewData.content" style="max-height: 600px;overflow: auto;"></div>
-        </div>
-        <div slot="footer">
-            <Button type="primary" @click="previewModal=false">关闭</Button>
-        </div>
-    </Modal>
+    <el-dialog :visible.sync="previewModal" :mask-closable="false" title="预览" top="30px">
+      <div class="preview-editor-content">
+        <h2>{{previewData.title}}</h2>
+        <div v-html="previewData.content" style="max-height: 600px;overflow: auto;"></div>
+      </div>
+      <div slot="footer">
+        <el-button type="primary" @click="previewModal=false">关闭</el-button>
+      </div>
+    </el-dialog>
 
     <!-- 图片裁剪 -->
-    <Modal v-model="cropperDialogShow" title="裁剪上传" :styles="{top:'30px'}" :mask-closable="false" @on-cancel="resetCropperDialog" width="700">
+    <el-dialog :visible.sync="cropperDialogShow" title="裁剪上传" top="30px" :mask-closable="false" @closed="resetCropperDialog" width="750px">
       <div class="cutting">
-        <Upload type="drag" action="" :before-upload="beforeUpload" accept=".jpg,.jpeg,.png,.gif">
+        <el-upload type="drag" action="" :before-upload="beforeUpload" accept=".jpg,.jpeg,.png,.gif">
           <div style="padding: 20px 0">
-              <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
+              <i class="el-icon-upload" style="color: #3399ff"></i>
               <p>点击或拖拽文件到此处进行裁剪</p>
           </div>
-        </Upload>
+        </el-upload>
         <div style="width:490px;margin: 0 auto;text-align: center;">
           <img id="myImg" :src="cropperImgSrc" alt="" style="max-width: 100%;max-height:500px;">
         </div>
         <div style="margin-top: 15px;">
-          <Button :type="which == 'banner' ? 'primary' : 'default'" @click="initCropper('banner')">
-            <Tooltip>
+          <el-button :type="which == 'banner' ? 'primary' : 'default'" @click="initCropper('banner')" size="small">
+            <el-tooltip>
               <span>banner</span>
               <p slot="content"  style="white-space: normal;">{{requiredSize['banner']}}</p>
-            </Tooltip>
-          </Button>
-          <Button :type="which == 'one' ? 'primary' : 'default'" @click="initCropper('one')">
-            <Tooltip>
+            </el-tooltip>
+          </el-button>
+          <el-button :type="which == 'one' ? 'primary' : 'default'" @click="initCropper('one')" size="small">
+            <el-tooltip>
               <span>单图</span>
               <p slot="content"  style="white-space: normal;">{{requiredSize['one']}}</p>
-            </Tooltip>
-          </Button>
-          <Button :type="which == 'main' ? 'primary' : 'default'" @click="initCropper('main')">
-            <Tooltip>
+            </el-tooltip>
+          </el-button>
+          <el-button :type="which == 'main' ? 'primary' : 'default'" @click="initCropper('main')" size="small">
+            <el-tooltip>
               <span>主图</span>
               <p slot="content"  style="white-space: normal;">{{requiredSize['main']}}</p>
-            </Tooltip>
-          </Button>
-          <Button :type="which == 'secondary' ? 'primary' : 'default'" @click="initCropper('secondary')">
-            <Tooltip>
+            </el-tooltip>
+          </el-button>
+          <el-button :type="which == 'secondary' ? 'primary' : 'default'" @click="initCropper('secondary')" size="small">
+            <el-tooltip>
               <span>次级图片</span>
               <p slot="content"  style="white-space: normal;">{{requiredSize['secondary']}}</p>
-            </Tooltip>
-          </Button>
+            </el-tooltip>
+          </el-button>
         </div>
-        <Form inline :label-width="100" style="margin-top: 15px;">
-          <FormItem label="自定义宽度(px)">
-            <InputNumber :min="100" v-model="selfWidth" placeholder="自定义宽度"></InputNumber>
-          </FormItem>
-          <FormItem label="自定义高度(px)">
-            <InputNumber :min="50" v-model="selfHeight" placeholder="自定义高度"></InputNumber>
-          </FormItem>
-          <Button type="primary" @click="setProportion">设置自定义宽高</Button>
+        <el-form inline label-width="120px" style="margin-top: 15px;">
+          <el-form-item label="自定义宽度(px)">
+            <el-inputNumber :min="100" v-model="selfWidth" placeholder="自定义宽度" size="small"></el-inputNumber>
+          </el-form-item>
+          <el-form-item label="自定义高度(px)">
+            <el-inputNumber :min="50" v-model="selfHeight" placeholder="自定义高度" size="small"></el-inputNumber>
+          </el-form-item>
+          <el-button type="primary" @click="setProportion" size="small">设置自定义宽高</el-button>
           <div>
-            <Button type="primary" @click="resetCropper2" style="margin-right: 15px;">重置裁剪</Button>
-            <Button type="primary" @click="beSureCropper" style="margin-right: 15px;">确定裁剪</Button>
-            <Button type="primary" @click="myUpload" :loading="uploadLoading" style="margin-right: 15px;">
-              <Tooltip>
+            <el-button type="primary" @click="resetCropper2" style="margin-right: 15px;" size="small">重置裁剪</el-button>
+            <el-button type="primary" @click="beSureCropper" style="margin-right: 15px;" size="small">确定裁剪</el-button>
+            <el-button type="primary" @click="myUpload" :loading="uploadLoading" size="small" style="margin-right: 15px;">
+              <el-tooltip>
                 <span>确定上传</span>
                 <p slot="content"  style="white-space: normal;">{{imgRequiredTxt}}</p>
-              </Tooltip>
-            </Button>
+              </el-tooltip>
+            </el-button>
           </div>
-        </Form>
-        <Form :label-width="100" style="margin-top: 15px;">
-          <FormItem label="上传的图片">
-            <Row v-if="fileUrl.length">
-              <Col span="8" v-for="(item, index) in fileUrl" :key="item">
+        </el-form>
+        <el-form label-width="100px" style="margin-top: 15px;">
+          <el-form-item label="上传的图片">
+            <el-row v-if="fileUrl.length">
+              <el-col :span="8" v-for="(item, index) in fileUrl" :key="item">
                 <div class="image-box">
                   <img :src="item" class="ad-img">
                   <div class="demo-upload-list-cover">
-                    <Icon type="ios-trash-outline" @click.native="handleRemove(index)"></Icon>
+                    <i class="el-icon-delete" @click.native="handleRemove(index)"></i>
                   </div>
                 </div>
-              </Col>
-            </Row>
+              </el-col>
+            </el-row>
             <div v-show="!fileUrl.length" class="image-box">
               <img :src="defaultUploadImgSrc" class="ad-img">
             </div>
-          </FormItem>
-        </Form>
+          </el-form-item>
+        </el-form>
       </div>
       <div slot="footer">
-        <Button @click="resetCropperDialog">{{label.close}}</Button>
+        <el-button @click="resetCropperDialog">{{label.close}}</el-button>
       </div>
-    </Modal>
+    </el-dialog>
   </div>
 </template>
 
@@ -460,7 +456,7 @@
           newsType: 100,
           newsDate: '',
           content: '',
-          newsStatus: '1',
+          newsStatus: 1,
           newsSrc: '和鸣锵锵', // 来源
           pageViews: 0, // 点击量
           isUp: '1',
@@ -484,7 +480,7 @@
             'width': 350,
             render: (create, params) => {
               var vm=this,title=params.row.title
-              return create('Button',{
+              return create('el-button',{
                 props: {
                   type: 'text'
                 },
@@ -622,7 +618,7 @@
             render: (create, params) => {
               let vm = this,arr=[]
               var disabled = params.row.newsStatus == 1 ? false : true
-              var previewBtn = create('Button', {
+              var previewBtn = create('el-button', {
                 props: {
                   type: 'success',
                   size: 'small'
@@ -639,7 +635,7 @@
                   }
                 }
               }, '预览')
-              var publishBtn = create('Button', {
+              var publishBtn = create('el-button', {
                 props: {
                   size: 'small',
                   disabled: disabled

@@ -165,7 +165,6 @@ export function setCurrentPath({commit,state},name){
   if (name === 'home' || name === 'main') {
     currentPathArr = [{
       title: '首页',
-      path: '/',
       name: 'home'
     }]
   } else {
@@ -196,11 +195,9 @@ export function setCurrentPath({commit,state},name){
             if (child.name === name) {
               currentPathArr = [{
                 title: '首页',
-                path: '/',
                 name: 'home'
               }, {
                 title: child.meta.title,
-                path: child.path,
                 name: child.name
               }]
             }
@@ -215,15 +212,12 @@ export function setCurrentPath({commit,state},name){
             if (child.name === name) {
               currentPathArr = [{
                 title: '首页',
-                path: '/',
                 name: 'home'
               }, {
                 title: item.meta.title,
-                path: item.path,
                 name: item.name
               }, {
                 title: child.meta.title,
-                path: child.path,
                 name: child.name
               }]
             }

@@ -1,33 +1,73 @@
 <template>
   <div class="advice-content">
-    <!-- <Form :model="formSearch" ref="formSearch" inline :label-width="60">
+    <!-- <el-form :model="formSearch" ref="formSearch" inline label-width="80px">
       
-      <Button type="default" style="margin:5px 8px 24px 0;" @click="resetSearch('formSearch')" size="small">{{label.clear}}</Button>
-      <Button type="primary" style="margin: 5px 8px 24px 0;" @click="submitSearch('formSearch')" size="small">{{label.search}}</Button>
-      <Button type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="small">{{label.add}}</Button>
-    </Form> -->
-    <mainTable :columns="columns" :data="pager.data" :loading="pageLoading"></mainTable>
+      <el-button type="default" style="margin:5px 8px 24px 0;" @click="resetSearch('formSearch')" size="small">{{label.clear}}</el-button>
+      <el-button type="primary" style="margin: 5px 8px 24px 0;" @click="submitSearch('formSearch')" size="small">{{label.search}}</el-button>
+      <el-button type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="small">{{label.add}}</el-button>
+    </el-form> -->
+
+    <el-table
+      :data="currentPager.data"
+      border
+      style="width: 100%">
+      <el-table-column
+        prop="nickName"
+        label="反馈用户"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="text"
+        label="反馈内容 "
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="contactInformation"
+        label="联系方式">
+      </el-table-column>
+      <el-table-column
+        prop="isOk"
+        label="是否解决">
+        <template slot-scope="scope">
+          <span v-if="scope.row.isOk==1">已解决</span>
+          <el-button v-else-if="scope.row.isOk==0" @click="resolveFeedback(scope.row.id)" type="primary" size="mini">确认已解决</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="createTime"
+        label="创建时间">
+      </el-table-column>
+      <el-table-column
+        prop="action"
+        fixed="right"
+        label="操作"
+        width="250">
+        <template slot-scope="scope">
+          <el-button v-if="hasPerm('authority_index:edit')" type="primary" @click="editRow(scope.row)" size="mini">编辑</el-button>
+          <el-button v-if="hasPerm('authority_index:delete')" type="danger" @click="delBtnClick(scope.row.id)" size="mini">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>    
+
     <paging @changePager="changePager" @paging="paging" :total="pager.total" :current="pager.current" :loading="pageLoading"></paging>
-    <Modal v-model="dialogShow" :title="label[currDialog]" :mask-closable="false" @on-cancel="resetDialogForm('formDialog')">
-      <Form :model="formDialog" ref="formDialog" :rules="rules" :label-width="80">
+    <el-dialog :visible.sync="dialogShow" :title="label[currDialog]" width="750px" :mask-closable="false" @on-cancel="resetDialogForm('formDialog')">
+      <el-form :model="formDialog" ref="formDialog" :rules="rules" label-width="90px">
         
-      </Form>
+      </el-form>
       <div slot="footer">
-        <Button @click="resetDialogForm('formDialog')">{{label.clear}}</Button>
-        <Button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading">{{label.submit}}</Button>
+        <el-button @click="resetDialogForm('formDialog')">{{label.clear}}</el-button>
+        <el-button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading">{{label.submit}}</el-button>
       </div>
-    </Modal>
+    </el-dialog>
   </div>
 </template>
 <script>
-  import mainTable from '@/components/mainTable'
   import paging from '@/components/paging'
   import page from '@/mixins/page'
   export default {
     name: 'adviceContent',
     mixins: [page],
     components: {
-      mainTable,
       paging,
     },
     data(){
@@ -55,86 +95,6 @@
         formDialog: {
 
         },
-        columns: [
-          // {
-          //   'title': 'id',
-          //   'key': 'id',
-          //   'width': 100,
-          //   'sortable': true
-          // },
-          {
-            'title': '反馈用户',
-            'key': 'nickName',
-            'sortable': true
-          },
-          {
-            'title': '反馈内容',
-            'key': 'text',
-            'sortable': true,
-            'width': 500
-          },
-          {
-            'title': '联系方式',
-            'key': 'contactInformation',
-            'sortable': true,
-            render:(create,params)=>{
-              var key=params.row.contactInformation
-              var txt = key ? key : '无'
-              return create('span', txt)
-            }
-          },
-          {
-            'title': '是否解决',
-            'key': 'isOk',
-            'sortable': true,
-            'align': 'center',
-            render: (create, params) => {
-              var vm=this;
-              var row = params.row.isOk,map=this.isOkMap
-              var key = row.toString()
-              var txt = map[key] ? map[key] : key
-              if(key==1)
-              {
-                return create('span', txt);
-              }
-              else
-              {
-               return  create('Button', {
-                      props: {
-                        type: "primary",
-                        size: 'small'
-                      },
-                      style: {
-                        'margin-left': '5px'
-                      },
-                      on: {
-                        click: () => {
-                          vm.$Modal.confirm({
-                            title: '确认',
-                            content: "确认该反馈已解决了吗？",
-                            onOk: function () {
-                              vm.changeRow(params.row.id)
-                            }
-                          })
-                        }
-                      }
-                    }, '确认已解决')
-              }
-            }
-          },
-          {
-            'title': '创建时间',
-            'key': 'createTime',
-            'sortable': true,
-            render: (create,params)=>{
-              var vm=this,key=params.row.createTime,txt=key
-              if(typeof key=='number'){
-                txt = vm.util.timestampToTime(key)
-              }
-              return create('span',txt)
-            }
-          },
-        ],
         rules: {},
         isOkMap:{
           "0":"未处理",
@@ -143,6 +103,16 @@
       }
     },
     methods: {
+      resolveFeedback(id){
+        var vm = this
+        vm.$confirm('确认该反馈已解决了吗？', '确认', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          vm.changeRow(id)
+        })
+      },
       // 重置搜索表单
       resetSearch(name){
         name = name || 'formSearch'
@@ -166,10 +136,18 @@
         }).then(res => {
           var resData = res.data
           if(resData.code==1){
-            vm.$Message.success('操作成功！')
+            vm.$message({
+              showClose: true,
+              type: 'success',
+              message: '操作成功！'
+            });
             vm.paging()
           }else{
-            vm.$Message.error(resData.message)
+            vm.$message({
+              showClose: true,
+              type: 'error',
+              message: '操作失败！'
+            });
           }
         }).catch(err=>{
 

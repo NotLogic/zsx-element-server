@@ -1,26 +1,75 @@
 <template>
   <div class="authority">
-    <Form :model="formSearch" ref="formSearch" inline :label-width="80">
+    <el-form :model="formSearch" ref="formSearch" inline label-width="90px">
       <template v-if="hasPerm('authority_index:search')">
-        <FormItem label="权限编码" prop="permValue">
-          <Input v-model="formSearch.permValue" placeholder="权限编码" size="small" @keydown.native.enter.prevent="submitSearch('formSearch')"></Input>
-        </FormItem>
-        <FormItem label="父权限编码" prop="parentValue">
-          <Input v-model="formSearch.parentValue" placeholder="父权限编码" size="small" @keydown.native.enter.prevent="submitSearch('formSearch')"></Input>
-        </FormItem>
-        <Button type="default" style="margin:5px 8px 24px 0;" @click="resetSearch('formSearch')" :disabled="pageLoading" size="small">{{label.clear}}</Button>
-        <Button type="primary" style="margin: 5px 8px 24px 0;" @click="submitSearch('formSearch')" :disabled="pageLoading" size="small">{{label.search}}</Button>
+        <el-form-item label="权限编码" prop="permValue">
+          <el-input v-model="formSearch.permValue" placeholder="权限编码" size="mini" @keydown.native.enter.prevent="submitSearch('formSearch')"></el-input>
+        </el-form-item>
+        <el-form-item label="父权限编码" prop="parentValue">
+          <el-input v-model="formSearch.parentValue" placeholder="父权限编码" size="mini" @keydown.native.enter.prevent="submitSearch('formSearch')"></el-input>
+        </el-form-item>
+        <el-button type="default" style="margin:5px 8px 24px 0;" @click="resetSearch('formSearch')" :disabled="pageLoading" size="mini">{{label.clear}}</el-button>
+        <el-button type="primary" style="margin: 5px 8px 24px 0;" @click="submitSearch('formSearch')" :disabled="pageLoading" size="mini">{{label.search}}</el-button>
       </template>
-      <Button v-if="hasPerm('authority_index:add')" type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="small">{{label.add}}</Button>
-    </Form>
-    
-    <!-- <mainTable :columns="columns" :data="pager.data"></mainTable>
-    <paging @changePager="changePager" @paging="paging" :total="pager.total" :current="pager.current"></paging> -->
+      <el-button v-if="hasPerm('authority_index:add')" type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="mini">{{label.add}}</el-button>
+    </el-form>
 
-    <main-table :columns="columns" :data="currentPager.data" :loading="pageLoading"></main-table>
+    <!-- <main-table :columns="columns" :data="currentPager.data" :loading="pageLoading"></main-table> -->
+    <el-table
+      :data="currentPager.data"
+      border
+      style="width: 100%">
+      <el-table-column
+        prop="permType"
+        label="权限类型"
+        width="180">
+        <template slot-scope="scope">
+          {{getValByMap(scope.row.permType, permTypeMap)}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="isLeaf"
+        label="是否子节点 "
+        width="180">
+        <template slot-scope="scope">
+          {{getValByMap(scope.row.isLeaf, isLeafMap)}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="permValue"
+        label="权限编码">
+      </el-table-column>
+      <el-table-column
+        prop="permName"
+        label="权限介绍">
+      </el-table-column>
+      <el-table-column
+        prop="parentValue"
+        label="父权限编码">
+      </el-table-column>
+      <el-table-column
+        prop="parentName"
+        label="父权限介绍">
+      </el-table-column>
+      <el-table-column
+        prop="createTime"
+        label="创建时间">
+      </el-table-column>
+      <el-table-column
+        prop="action"
+        fixed="right"
+        label="操作"
+        width="250">
+        <template slot-scope="scope">
+          <el-button v-if="hasPerm('authority_index:edit')" type="primary" @click="editRow(scope.row)" size="mini">编辑</el-button>
+          <el-button v-if="hasPerm('authority_index:delete')" type="danger" @click="delBtnClick(scope.row.id)" size="mini">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
     <paging @changePager="changePager" @paging="paging" :total="currentPager.total" :current="currentPager.current" :loading="pageLoading"></paging>
 
-    <Modal v-model="dialogShow" :title="label[currDialog]" :mask-closable="false" @on-cancel="resetDialogForm('formDialog')" width="800">
+    <el-dialog :visible.sync="dialogShow" :title="label[currDialog]" :mask-closable="false" @closed="resetDialogForm('formDialog')" width="800px">
       <el-form :model="formDialog" ref="formDialog" :rules="rules" label-width="100px">
         <!-- <div style="margin-bottom:20px;">
           <p>权限说明：</p>
@@ -29,15 +78,15 @@
           <p style="text-indent:24px;"></p>
           <p style="text-indent:24px;"></p>
         </div> -->
-        <Row>
-          <Col span="12">
+        <el-row>
+          <el-col :span="12">
             <el-form-item label="权限类型" prop="permType">
               <el-select v-model="formDialog.permType" placeholder="请选择" filterable size="small">
                 <el-option v-for="item in permType" :key="item.value" :label="item.label" :value="item.value"></el-option>
               </el-select>
             </el-form-item>
-          </Col>
-          <Col span="12">
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="是否子节点" prop="isLeaf">
               <el-select v-model="formDialog.isLeaf" placeholder="请选择" filterable size="small">
                 <el-option
@@ -48,45 +97,45 @@
                 </el-option>
               </el-select>
             </el-form-item>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="12">
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
             <el-form-item label="权限编码" prop="permValue">
               <el-input v-model="formDialog.permValue" :placeholder="formDialog.isLeaf=='0' ? '' : 'childRouterName:add'" size="small"></el-input>
             </el-form-item>
-          </Col>
-          <Col span="12">
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="权限介绍" prop="permName">
               <el-input v-model="formDialog.permName" size="small"></el-input>
             </el-form-item>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="12">
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
             <el-form-item label="父权限编码" prop="parentValue">
               <el-input v-model="formDialog.parentValue" size="small" :disabled="formDialog.isLeaf == '0'" :placeholder="formDialog.isLeaf == '0' ? '' : 'parentRouterName'"></el-input>
             </el-form-item>
-          </Col>
-          <Col span="12">
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="父权限介绍" prop="parentName">
               <el-input v-model="formDialog.parentName" size="small" :disabled="formDialog.isLeaf == '0'"></el-input>
             </el-form-item>
-          </Col>
-        </Row>
-        <!-- <Row v-if="formDialog.permType==1">
-          <Col span="12">
+          </el-col>
+        </el-row>
+        <!-- <el-row v-if="formDialog.permType==1">
+          <el-col span="12">
             <el-form-item label="菜单小图标" prop="icon">
-              <Input v-model="formDialog.icon" placeholder="iview图标库"></Input>
+              <el-input v-model="formDialog.icon" placeholder="iview图标库"></el-input>
             </el-form-item>
-          </Col>
-        </Row> -->
+          </el-col>
+        </el-row> -->
       </el-form>
       <div slot="footer">
-        <Button @click="resetDialogForm('formDialog')">{{label.clear}}</Button>
-        <Button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading">{{label.submit}}</Button>
+        <el-button @click="resetDialogForm('formDialog')">{{label.clear}}</el-button>
+        <el-button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading">{{label.submit}}</el-button>
       </div>
-    </Modal>
+    </el-dialog>
   </div>
 </template>
 <script>

@@ -1,112 +1,101 @@
 <template>
   <div class="adviceBack">
     <div id="search-wrapper">
-      <Form :model="formSearch" ref="formSearch" inline :label-width="70">
-          <!-- <FormItem label="关键词" prop="key">
-              <Input v-model="formSearch.key" placeholder="昵称/内容" size="small"></Input>
-          </FormItem> -->
-          <!-- <FormItem label="反馈人ID" prop="userId">
-              <Input v-model="formSearch.userId" placeholder="反馈人ID" size="small"></Input>
-          </FormItem>
-          <FormItem label="联系方式" prop="phone">
-              <Input v-model="formSearch.phone" placeholder="联系方式" size="small"></Input>
-          </FormItem>
-          <FormItem label="反馈时间">
-            <FormItem prop="st">
-              <DatePicker type="datetime" placeholder="点击选择时间" v-model="formSearch.st" size="small" :clearable="false"></DatePicker>
-            </FormItem>
-            <FormItem>至</FormItem>
-            <FormItem prop="et">
-              <DatePicker type="datetime" placeholder="点击选择时间" v-model="formSearch.et" size="small" :clearable="false"></DatePicker>
-            </FormItem>
-          </FormItem> -->
-          <!-- <Button type="ghost" style="margin: 5px 8px 24px 0" @click="resetSearch('formSearch')" size="small">{{label.clear}}</Button>
-          <Button type="primary" style="margin: 5px 8px 24px 0" @click="submitSearch('formSearch')" size="small">{{label.search}}</Button> -->
-          <Button v-if="hasPerm('adviceBack_index:delete')" type="error" style="margin: 5px 8px 24px 0" :disabled="batchIdArr.length==0" @click="batchDel" size="small">批量删除</Button>
-          <!-- <Button type="primary" style="margin: 5px 8px 24px 0" @click="exportData" size="small">导出</Button> -->
-          <Button v-if="hasPerm('adviceBack_index:add')" type="primary" style="margin:5px 8px 24px 0;" @click="addRow()" size="small">{{label.add}}</Button>
-          <Button type="primary" style="margin:5px 8px 24px 0;" @click="initEcahrs(defaultEchartsData)" size="small">重置图表</Button>
-      </Form>
+      <el-form :model="formSearch" ref="formSearch" inline label-width="70px">
+          
+        <el-button v-if="hasPerm('adviceBack_index:delete')" type="danger" style="margin: 5px 8px 24px 0" :disabled="batchIdArr.length==0" @click="batchDel" size="mini">批量删除</el-button>
+        <el-button v-if="hasPerm('adviceBack_index:add')" type="primary" style="margin:5px 8px 24px 0;" @click="addRow()" size="mini">{{label.add}}</el-button>
+        <el-button type="primary" style="margin:5px 8px 24px 0;" @click="initEcahrs(defaultEchartsData)" size="mini">重置图表</el-button>
+      </el-form>
     </div>
-    <!-- <mainTable :columns="columns" :data="pager.data" @updateSelect="updateSelect" :height="tableHeight"></mainTable> -->
+    
     <div class="advice-content-wrapper">
       <div style="width: 500px;">
-        <Tree :data="pageTreeData" show-checkbox multiple :load-data="loadData" @on-select-change="treeSelectChange" @on-check-change="treeCheckChange" :multiple="false"></Tree>
+        <!-- <Tree 
+          :data="pageTreeData" 
+          show-checkbox 
+          multiple 
+          :load-data="loadData" 
+          @on-select-change="treeSelectChange" 
+          @on-check-change="treeCheckChange" 
+          :multiple="false"></Tree> -->
+        <el-tree
+          :data="pageTreeData"
+          show-checkbox
+          node-key="id"
+          ref="permTree"
+          lazy
+          :load="loadData"
+          @check-change="treeCheckChange"
+          @node-click="treeSelectChange"
+          highlight-current>
+        </el-tree>
       </div>
       <div class="my-echarts-wrapper">
-        <!-- 反馈统计数据 -->
         <div v-if="!myEcharts" style="text-align: center;">意见反馈统计图</div>
         <div id="my-echarts" style="height:600px;"></div>
       </div>
     </div>
 
-    <Modal v-model="dialogShow" :title="label[currDialog]" :mask-closable="false" width="750" @on-cancel="resetDialogForm('formDialog')">
-      <Form :model="formDialog" ref="formDialog" :rules="rules" :label-width="80">
-        <!-- skipType：{{formDialog.skipType}} <br>
-        skipUrl：{{formDialog.skipUrl}} -->
-        <Row>
-          <Col span="12">
-            <FormItem label="模块名称" prop="text">
-              <Input v-model="formDialog.text" placeholder="请输入模块名称"></Input>
-            </FormItem>
-          </Col>
-          <Col span="12">
-            <FormItem label="父级" prop="parentId">
-              <Select v-model="formDialog.parentId" placeholder="请选择/输入关键字搜索" filterable>
-                <Option v-for="item in parentId" :value="item.value" :key="item.value">{{ item.label }}</Option>
-              </Select>
-            </FormItem>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="12">
-            <FormItem label="是否跳转" prop="isSkip">
-              <Select v-model="formDialog.isSkip" placeholder="请选择">
-                <Option v-for="item in isSkip" :value="item.value" :key="item.value">{{ item.label }}</Option>
-              </Select>
-            </FormItem>
-          </Col>
-          <Col span="12">
-            <FormItem label="状态" prop="status">
-              <Select v-model="formDialog.status" placeholder="请选择">
-                <Option v-for="item in status" :value="item.value" :key="item.value">{{ item.label }}</Option>
-              </Select>
-            </FormItem>
-          </Col>
-        </Row>
-        <Row v-if="formDialog.isSkip==1">
-          <Col span="12">
-            <FormItem label="跳转方式" prop="skipType">
-              <Select v-model="formDialog.skipType" placeholder="请选择">
-                <Option v-for="item in skipType" :value="item.value" :key="item.value">{{ item.label }}</Option>
-              </Select>
-            </FormItem>
-          </Col>
-          <Col span="12">
-            <FormItem label="跳转URL" prop="skipUrl">
-              <Input v-model="formDialog.skipUrl" placeholder="请输入跳转URL"></Input>
-            </FormItem>
-          </Col>
-        </Row>
-      </Form>
+    <el-dialog :visible.sync="dialogShow" :title="label[currDialog]" :mask-closable="false" width="750px" @closed="resetDialogForm('formDialog')">
+      <el-form :model="formDialog" ref="formDialog" :rules="rules" label-width="90px">
+        <el-row>
+          <el-col span="12">
+            <el-form-item label="模块名称" prop="text">
+              <el-input v-model="formDialog.text" size="small" placeholder="请输入模块名称"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col span="12">
+            <el-form-item label="父级" prop="parentId">
+              <el-select v-model="formDialog.parentId" placeholder="请选择/输入关键字搜索" filterable>
+                <el-option v-for="item in parentId" :key="item.value" :value="item.value" :label="item.label"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col span="12">
+            <el-form-item label="是否跳转" prop="isSkip">
+              <el-select v-model="formDialog.isSkip" placeholder="请选择">
+                <el-option v-for="item in isSkip" :key="item.value" :value="item.value" :label="item.label"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col span="12">
+            <el-form-item label="状态" prop="status">
+              <el-select v-model="formDialog.status" placeholder="请选择">
+                <el-option v-for="item in status" :key="item.value" :value="item.value" :label="item.label"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row v-if="formDialog.isSkip==1">
+          <el-col span="12">
+            <el-form-item label="跳转方式" prop="skipType">
+              <el-select v-model="formDialog.skipType" placeholder="请选择">
+                <el-option v-for="item in skipType" :key="item.value" :value="item.value" :label="item.label"></el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col span="12">
+            <el-form-item label="跳转URL" prop="skipUrl">
+              <el-input v-model="formDialog.skipUrl" size="small" placeholder="请输入跳转URL"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
       <div slot="footer">
-        <Button @click="resetDialogForm('formDialog')">{{label.clear}}</Button>
-        <Button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading">{{label.submit}}</Button>
+        <el-button @click="resetDialogForm('formDialog')" size="small">{{label.clear}}</el-button>
+        <el-button type="primary" @click="submitDialogForm('formDialog')" size="small" :loading="dialogSubmitLoading">{{label.submit}}</el-button>
       </div>
-    </Modal>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import mainTable from "@/components/mainTable";
-import paging from "@/components/paging";
 import page from "@/mixins/page";
 export default {
   name: "adviceBack_index",
-  components: {
-    mainTable,
-    paging
-  },
   mixins: [page],
   data() {
     return {
@@ -126,7 +115,6 @@ export default {
       pageTreeData: [],
       pager: {
         data: [],
-        // url: 'feedback/dataGrid',
         url: "feedback/parent"
       },
       parentId: [],
@@ -181,114 +169,6 @@ export default {
         phone: "",
         userId: ""
       },
-      columns: [
-        {
-          type: "selection",
-          width: 80,
-          fixed: "left",
-          align: "center"
-        },
-        {
-          title: "ID",
-          key: "id",
-          width: 150
-        },
-        {
-          title: "所属模块",
-          key: "text",
-          width: 300,
-          render: (create, params) => {
-            var vm = this;
-            var arr = [
-              // create("Button", {
-              //   props: {
-              //     type: "text",
-              //     icon: "arrow-right-b"
-              //   },
-              //   style: {
-              //     float: "left"
-              //     // backgroundColor: 'aqua'
-              //   },
-              //   on: {
-              //     click: function() {
-              //       vm.addChildren(params.row.id, params.index);
-              //     }
-              //   }
-              // }),
-              create(
-                "Button",
-                {
-                  props: {
-                    type: "text"
-                  },
-                  style: {
-                    float: "left",
-                    marginLeft: "10px"
-                    // backgroundColor: 'pink'
-                  },
-                  on: {
-                    click: function() {
-                      vm.editRow(params.row);
-                    }
-                  }
-                },
-                params.row.text
-              )
-            ];
-            return create("div", arr);
-          }
-        },
-        {
-          title: "父级",
-          key: "parentId",
-          width: 150
-        },
-        {
-          title: "状态",
-          key: "status",
-          sortable: true,
-          render: (create, params) => {
-            var vm = this;
-            return create("span", vm.statusMap[params.row.status]);
-          }
-        },
-        {
-          title: "是否跳转",
-          key: "isSkip",
-          width: 150,
-          render: (create, params) => {
-            var vm = this;
-            return create("span", vm.isSkipMap[params.row.isSkip]);
-          }
-        },
-        {
-          title: "跳转方式",
-          key: "skipType",
-          width: 150,
-          render: (create, params) => {
-            var vm = this;
-            return create("span", vm.skipTypeMap[params.row.skipType]);
-          }
-        },
-        {
-          title: "跳转URL",
-          key: "skipUrl"
-          // "width": 200,
-        },
-        {
-          title: "操作",
-          key: "action",
-          width: 140,
-          align: "center",
-          fixed: "right",
-          render: (create, params) => {
-            return create("div", [
-              this.createEditBtn(create, params.row),
-              this.createDelBtn(create, params.row.id)
-            ]);
-          }
-        }
-      ],
       formDialog: {
         id: "",
         text: "",
@@ -338,48 +218,6 @@ export default {
         }
       }).catch(err => {});
     },
-    addChildren(id, index) {
-      // array.splice(1,0,"张四")  在指定位置插入元素
-      var vm = this;
-      var pager = vm.pager,
-        ajaxData = {
-          id: id || 0
-        };
-      var method = pager.method;
-      var params = {
-        url: pager.url,
-        method: method
-      };
-      if (method == "get") {
-        params.params = ajaxData;
-      } else {
-        params.data = ajaxData;
-      }
-      vm.$http2(params).then(res => {
-        let resData = res.data;
-        if (resData.code == 1) {
-          var childrenData = resData.data;
-          if(childrenData.length){
-            var data = this.util.deepcopy(pager.data);
-            data.splice(index + 1, 0, ...childrenData);
-            pager.data = data;
-          }else{
-            vm.$Message.info('没有子集了')
-          }
-        }
-      }).catch(err => {});
-    },
-    updateSelect(selection) {
-      var vm = this,
-        batchIdArr = [],
-        len = selection.length;
-      if (len) {
-        for (var i = 0; i < len; i++) {
-          batchIdArr.push(selection[i].postId);
-        }
-      }
-      vm.batchIdArr = batchIdArr;
-    },
     initOther(data) {
       var vm = this;
       var _data = vm.util.deepcopy(data),
@@ -388,10 +226,9 @@ export default {
         key;
       for (var i = 0; i < _data.length; i++) {
         item = _data[i];
-        item.title = item.text || item.id;
+        item.label = item.text || item.id;
         item.children = [];
-        item.loading = false;
-        item.render = vm.treeRowRender
+        item['render-content'] = vm.treeRowRender
         pageTreeData.push(item);
       }
       vm.pageTreeData = pageTreeData;
@@ -399,6 +236,7 @@ export default {
     },
     // 树形
     loadData(item, callback) {
+      console.log('item: ',item)
       var vm = this;
       var id = item.id,
         checked = item.checked;
@@ -429,11 +267,10 @@ export default {
           if (len) {
             for (i = 0; i < childrenData.length; i++) {
               item = childrenData[i];
-              item.title = item.text || item.id;
+              item.label = item.text || item.id;
               item.children = [];
-              item.render = vm.treeRowRender
+              item['render-content'] = vm.treeRowRender
               if (checked) {
-                // 如果父级已被选中，展开时将所有子级的id推入batchIdArr
                 arr.push(item.id);
               }
               item.loading = false;
@@ -441,7 +278,10 @@ export default {
             }
             vm.batchIdArr = vm.batchIdArr.concat(arr);
           } else {
-            vm.$Message.info("没有子集了！");
+            vm.$message({
+              showClose: true,
+              message: '没有子集了'
+            });
           }
           callback(_data);
         }
@@ -478,21 +318,27 @@ export default {
             if(total){
               vm.initEcahrs(echartsData,txt)
             }else{
-              vm.$Message.info(txt + '暂无数据')
+              vm.$message({
+                showClose: true,
+                message: txt + '暂无数据'
+              });
             }
           }else{
-            vm.$Message.info(resData.message)
+            vm.$message({
+              showClose: true,
+              message: resData.message || '暂无数据'
+            });
           }
         }
       })
     },
-    treeRowRender(h, { root, node, data }) {
+    treeRowRender(h, { node, data, store }) {
       var vm = this,arr=[]
-      var addBtn = h("Button", {
+      var addBtn = h("el-button", {
         props: {
-          icon: "md-add",
+          icon: "el-icon-circle-plus",
           type: "primary",
-          size: 'small',
+          size: 'mini',
         },
         style: {
           width: "52px",
@@ -500,17 +346,15 @@ export default {
         },
         on: {
           click: () => {
-            // 在当前行点添加，添加的应该是父级是此行的
             vm.addRow(data.id);
-            // vm.addRow(data.parentId);
           }
         }
       })
-      var editBtn = h("Button", {
+      var editBtn = h("el-button", {
         props: {
-          icon: "md-create",
+          icon: "el-icon-remove",
           type: "primary",
-          size: 'small',
+          size: 'mini',
         },
         style: {
           width: "52px",
@@ -522,11 +366,11 @@ export default {
           }
         }
       })
-      var deleteBtn = h("Button", {
+      var deleteBtn = h("el-button", {
         props: {
-          icon: "md-close",
-          type: "error",
-          size: 'small',
+          icon: "el-icon-circle-close",
+          type: "danger",
+          size: 'mini',
         },
         style: {
           width: "52px",
@@ -534,12 +378,12 @@ export default {
         },
         on: {
           click: () => {
-            vm.$Modal.confirm({
-              title: '确认',
-              content: '确认删除这条数据吗？',
-              onOk: function () {
-                vm.delRow(data)
-              }
+            vm.$confirm('确认删除这条数据吗？', '确认', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+            }).then(() => {
+              vm.delRow(data)
             })
           }
         }
@@ -555,9 +399,7 @@ export default {
       }
       return h("span",
         [
-          // h("span", data.title),
-          // 渲染按钮，点击触发编辑功能
-          h('Button',{
+          h('el-button',{
             props: {
               type: "text",
               size: 'small',
@@ -565,10 +407,9 @@ export default {
             on: {
                 click: () => {
                   vm.initEcharts(data.id,data.title)
-                  // vm.editRow(data);
                 }
               }
-          },data.title),
+          },data.label),
           h("span",{
             style: {
               float: 'right'
@@ -581,7 +422,6 @@ export default {
     resetSearch(name) {
       this.$refs[name].resetFields();
       this.paging(1);
-      // this.submitSearch(name)
     },
     initDialog(data) {
       var vm = this;
@@ -611,28 +451,28 @@ export default {
     // 批量操作
     batchoperation(parmas) {
       var vm = this;
-      if (typeof parmas != "object") {
-        vm.$Message.error("传参错误");
-        return;
-      }
       parmas.method = parmas.method || "post";
       vm.$http2(parmas).then(res => {
         var resData = res.data;
         if (resData.code == 1) {
-          vm.$Message.success("操作成功");
+          vm.$message({
+            showClose: true,
+            type: 'success',
+            message: '操作成功'
+          });
           vm.batchIdArr = [];
           vm.paging();
         } else {
-          vm.$Message.error(resData.message);
+          vm.$message({
+            showClose: true,
+            type: 'error',
+            message: resData.message || '操作失败'
+          });
         }
       }).catch(err => {});
     },
     delRow(data) {
       var vm = this;
-      if (!data.id) {
-        vm.$Message.error("id获取失败");
-        return;
-      }
       var parmas = {
         method: "post",
         url: vm.url.delete,
@@ -659,10 +499,6 @@ export default {
         }
       });
     },
-    exportData() {
-      var vm = this;
-      vm.$Message.info(vm.label.wait);
-    },
     initEcahrs(data,txt){
       var vm = this
       var xData=[],_txt=txt||'锵锵意见反馈统计图'
@@ -683,7 +519,8 @@ export default {
             data: xData,
           },
           yAxis: {
-            show: true
+            show: true,
+            minInterval: 1
           },
           tooltip: {
           trigger: "item"
@@ -716,7 +553,10 @@ export default {
             if(_data.length){
               vm.initEcahrs(_data, params.data.name)
             }else{
-              vm.$Message.info('没有子集数据了')
+              vm.$message({
+                showClose: true,
+                message: '没有子集了'
+              });
             }
           });
           window.addEventListener("resize", function () {
@@ -760,10 +600,12 @@ export default {
             vm.defaultEchartsData = resData.data
             vm.initEcahrs(resData.data)
           }else{
-            vm.$Message.info(resData.message)
+            vm.$message({
+              showClose: true,
+              message: resData.message
+            });
           }
         }
-        
       })
     },
     initData(){

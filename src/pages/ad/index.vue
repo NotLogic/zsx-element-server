@@ -1,91 +1,174 @@
 <template>
   <div class="ad">
     <div id="search-wrapper">
-      <Form :model="formSearch" ref="formSearch" inline :label-width="70">
+      <el-form :model="formSearch" ref="formSearch" inline label-width="90px">
         <template v-if="hasPerm('ad_index:search')">
-          <FormItem label="标题">
-            <Input v-model="formSearch.title" placeholder="标题" size="small" @keydown.native.enter.prevent="submitSearch('formSearch')"></Input>
-          </FormItem>
-          <FormItem label="广告位置" prop="postion">
-            <Select v-model="formSearch.postion" placeholder="请选择" size="small" clearable style="width:170px;">
-              <Option v-for="item in postion" :value="item.value" :key="item.value">{{ item.label }}</Option>
-            </Select>
-          </FormItem>
-          <FormItem label="广告状态" prop="lockStatus">
-            <Select v-model="formSearch.lockStatus" placeholder="请选择" size="small" clearable style="width: 80px;">
-              <Option v-for="item in lockStatus" :key="item.value" :value="item.value">{{item.label}}</Option>
-            </Select>
-          </FormItem>
-          <FormItem label="投放级别">
-            <Select v-model="formSearch.areaType" placeholder="请选择" size="small" clearable style="width: 80px;">
-              <Option v-for="item in areaType" :key="item.value" :value="item.value">{{item.label}}</Option>
-            </Select>
-          </FormItem>
-          <FormItem label="关联地区">
-            <Cascader :data="derail_address_arr_s" v-model="derail_address_obj_s" :filterable="true" size="small" style="margin-top: 5px"></Cascader>
-          </FormItem>
-          <FormItem label="展示时间">
-            <FormItem>
-              <DatePicker type="datetime" format="yyyy-MM-dd HH:mm:ss" placeholder="点击选择时间" v-model="searchStartTime" @on-change="searchStartTimeChange" size="small" :clearable="false"></DatePicker>
-            </FormItem>
-            <FormItem>至</FormItem>
-            <FormItem>
-              <DatePicker type="datetime" format="yyyy-MM-dd HH:mm:ss" placeholder="点击选择时间" v-model="searchEndTime" @on-change="searchEndTimeChange" size="small" :clearable="false"></DatePicker>
-            </FormItem>
-          </FormItem>
-          <Button type="default" style="margin:5px 8px 24px 0;" @click="resetSearch('formSearch')" :disabled="pageLoading" size="small">{{label.clear}}</Button>
-          <Button type="primary" style="margin: 5px 8px 24px 0;" @click="submitSearch('formSearch')" :disabled="pageLoading" size="small">{{label.search}}</Button>
+          <el-form-item label="标题">
+            <el-input v-model="formSearch.title" placeholder="标题" size="mini" @keydown.native.enter.prevent="submitSearch('formSearch')"></el-input>
+          </el-form-item>
+          <el-form-item label="广告位置" prop="postion">
+            <el-select v-model="formSearch.postion" placeholder="请选择" size="mini" clearable style="width:170px;">
+              <el-option v-for="item in postion" :key="item.value" :value="item.value" :label="item.label"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="广告状态" prop="lockStatus">
+            <el-select v-model="formSearch.lockStatus" placeholder="请选择" size="mini" clearable style="width: 80px;">
+              <el-option v-for="item in lockStatus" :key="item.value" :value="item.value" :label="item.label"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="投放级别">
+            <el-select v-model="formSearch.areaType" placeholder="请选择" size="mini" clearable style="width: 80px;">
+              <el-option v-for="item in areaType" :key="item.value" :value="item.value" :label="item.label"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="关联地区">
+            <el-cascader :options="derail_address_arr_s" v-model="derail_address_obj_s" :filterable="true" size="mini" style="margin-top: 5px"></el-cascader>
+          </el-form-item>
+          <el-form-item label="展示时间">
+            <el-form-item>
+              <el-date-picker type="datetime" size="mini" format="yyyy-MM-dd HH:mm:ss" placeholder="点击选择时间" v-model="searchStartTime" @on-change="searchStartTimeChange" :clearable="false"></el-date-picker>
+            </el-form-item>
+            <el-form-item>至</el-form-item>
+            <el-form-item>
+              <el-date-picker type="datetime" size="mini" format="yyyy-MM-dd HH:mm:ss" placeholder="点击选择时间" v-model="searchEndTime" @on-change="searchEndTimeChange" :clearable="false"></el-date-picker>
+            </el-form-item>
+          </el-form-item>
+          <el-button type="default" style="margin:5px 8px 24px 0;" @click="resetSearch('formSearch')" :disabled="pageLoading" size="mini">{{label.clear}}</el-button>
+          <el-button type="primary" style="margin: 5px 8px 24px 0;" @click="submitSearch('formSearch')" :disabled="pageLoading" size="mini">{{label.search}}</el-button>
         </template>
-        <Button v-if="hasPerm('ad_index:add')" type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="small">{{label.add}}</Button>
-        <Button v-if="hasPerm('ad_index:delete')" type="error" :disabled="batchIdArr.length==0" style="margin: 5px 8px 24px 0;" @click="batchDelete" size="small">批量删除</Button>
-        <Button v-if="hasPerm('ad_index:clearCache')" type="warning" style="margin: 5px 8px 24px 0;" @click="clearCache('广告')" size="small">{{label.clearCache}}</Button>
-      </Form>
+        <el-button v-if="hasPerm('ad_index:add')" type="primary" style="margin: 5px 8px 24px 0;" @click="addRow" size="mini">{{label.add}}</el-button>
+        <el-button v-if="hasPerm('ad_index:delete')" type="danger" :disabled="batchIdArr.length==0" style="margin: 5px 8px 24px 0;" @click="batchDelete" size="mini">批量删除</el-button>
+        <el-button v-if="hasPerm('ad_index:clearCache')" type="warning" style="margin: 5px 8px 24px 0;" @click="clearCache('广告')" size="mini">{{label.clearCache}}</el-button>
+      </el-form>
     </div>
-    
-    <main-table :columns="columns" :data="currentPager.data" @updateSelect="updateSelect" :height="tableHeight" :loading="pageLoading"></main-table>
-    <paging @changePager="changePager" @paging="paging" :total="currentPager.total" :current="currentPager.current" :loading="pageLoading"></paging>
-    
-    <!-- <mainTable :columns="columns" :data="pager.data" @updateSelect="updateSelect" :height="tableHeight"></mainTable> -->
-    <!-- <paging @changePager="changePager" @paging="paging" :total="pager.total" :current="pager.current"></paging> -->
 
-    <Modal v-model="dialogShow" :title="label[currDialog]" :mask-closable="false" width="900" :styles="{top:'30px'}" @on-cancel="resetDialogForm('formDialog')">
+    <el-table
+      :data="currentPager.data"
+      @selection-change="updateSelect"
+      border
+      style="width: 100%">
+      <el-table-column
+        type="selection"
+        width="55">
+      </el-table-column>
+      <el-table-column
+        prop="title"
+        label="标题"
+        width="180">
+      </el-table-column>
+      <el-table-column
+        prop="imagePath"
+        label="主图"
+        width="180">
+        <template slot-scope="scope">
+          <a :href="getImageUrl(scope.row.imagePath)" _target="blank">
+            <img style="max-width:100px;max-height: 100px;" :src="getImageUrl(scope.row.imagePath)" :alt="getImageUrl(scope.row.imagePath)">
+          </a>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="type"
+        label="链接类型">
+        <template slot-scope="scope">
+          {{getValByMap(scope.row.type, typeMap)}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="postion"
+        label="广告位置">
+        <template slot-scope="scope">
+          {{getValByMap(scope.row.postion, postionMap)}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="areaType"
+        label="关联地区">
+        <template slot-scope="scope">
+          {{getAreaTxt(scope.row)}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="startTime"
+        label="开始时间">
+      </el-table-column>
+      <el-table-column
+        prop="endTime"
+        label="结束时间">
+      </el-table-column>
+      <el-table-column
+        prop="lockStatus"
+        label="状态">
+        <template slot-scope="scope">
+          {{getValByMap(scope.row.lockStatus, lockStatusMap)}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="sort"
+        label="排序">
+        <template slot-scope="scope">
+          {{scope.row.sort == 1 ? '置顶' : scope.row.sort}}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="clickNum"
+        label="点击次数">
+      </el-table-column>
+      <el-table-column
+        prop="createTime"
+        label="创建时间">
+      </el-table-column>
+      <el-table-column
+        prop="action"
+        fixed="right"
+        label="操作"
+        width="250">
+        <template slot-scope="scope">
+          <el-button v-if="hasPerm('ad_index:edit')" type="primary" @click="editRow(scope.row)" size="mini">编辑</el-button>
+          <el-button v-if="hasPerm('ad_index:delete')" type="danger" @click="delBtnClick(scope.row.id)" size="mini">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <paging @changePager="changePager" @paging="paging" :total="currentPager.total" :current="currentPager.current" :loading="pageLoading"></paging>
+
+    <el-dialog :visible.sync="dialogShow" :title="label[currDialog]" :mask-closable="false" width="900px" top="30px" @closed="resetDialogForm('formDialog')">
       <el-form :model="formDialog" ref="formDialog" :rules="rules" label-width="80px">
-        <Row>
-          <Col span="12">
+        <el-row>
+          <el-col :span="12">
             <el-form-item label="标题" prop="title">
               <el-input v-model="formDialog.title" placeholder="请输入标题（广告图片下方的文字）" size="small"></el-input>
             </el-form-item>
-          </Col>
-          <Col span="12">
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="广告内容" prop="context">
-              <Input v-model="formDialog.context" placeholder="请输入广告内容（广告图片上方的文字）"></Input>
+              <el-input v-model="formDialog.context" placeholder="请输入广告内容（广告图片上方的文字）" size="small"></el-input>
             </el-form-item>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="12">
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
             <el-form-item label="广告位置" prop="postion">
               <el-select v-model="formDialog.postion" placeholder="请选择" filterable size="small">
                 <el-option v-for="item in postion" :key="item.value" :label="item.label" :value="item.value"></el-option>
               </el-select>
             </el-form-item>
-          </Col>
-          <Col span="12">
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="排序" prop="sort" inline>
-              <InputNumber :max="10" :min="1" v-model="formDialog.sort" :disabled="formDialog.sort==1&&formDialog.isUp==2"></InputNumber>
-              <Button type="default" v-if="formDialog.sort==1" @click="formDialog.isUp = formDialog.isUp==1 ?2:1">{{formDialog.isUp==1 ? '置顶' : '取消置顶'}}</Button>
+              <el-input-number size="small" :max="10" :min="1" v-model="formDialog.sort" :disabled="formDialog.sort==1&&formDialog.isUp==2"></el-input-number>
+              <el-button type="default" size="small" v-if="formDialog.sort==1" @click="formDialog.isUp = formDialog.isUp==1 ?2:1">{{formDialog.isUp==1 ? '置顶' : '取消置顶'}}</el-button>
               <span style="font-size: 80%;color: #ff4d44;padding-left: 3px">数值越小优先级越高</span>
             </el-form-item>
-          </Col>
-        </Row>
+          </el-col>
+        </el-row>
         <!-- 上传广告图片 -->
-        <Row>
-          <Col span="24">
+        <el-row>
+          <el-col :span="24">
             <el-form-item label="广告图片">
-              <Col span="18">
-                <Row>
-                  <Col span="6">
-                    <Upload name="file"
+              <el-col :span="18">
+                <el-row>
+                  <el-col :span="6">
+                    <el-upload name="file"
                         :action="url.upload"
                         :multiple="uploadImgMax==1 ? false : true"
                         accept=".jpg,.jpeg,.png,.gif"
@@ -93,34 +176,35 @@
                         :format="imgUploadFormat"
                         :on-format-error="handleFormatError"
                         :on-success="myHandleSuccess">
-                      <Button type="default" icon="ios-cloud-upload-outline">选择图片</Button>
-                    </Upload>
-                    <Button type="primary" @click="myUpload" :loading="uploadLoading">
-                      <Tooltip>
-                        <span>确定上传</span>
-                        <p slot="content"  style="white-space: normal;">{{imgRequiredTxt}}</p>
-                      </Tooltip>
-                    </Button>
-                    <Button type="primary" @click="cropperDialogShow=true">裁剪图片</Button>
-                  </Col>
-                  <Col span="18">
-                    <Row v-if="fileUrl.length">
-                      <Col span="8" v-for="(item, index) in fileUrl" :key="item">
+                      <el-button type="default" size="small" icon="el-icon-upload">选择图片</el-button>
+                    </el-upload>
+                    <el-popover
+                      placement="bottom"
+                      width="200"
+                      trigger="hover"
+                      :content="imgRequiredTxt">
+                      <el-button slot="reference" type="primary" size="small" @click="myUpload" :loading="uploadLoading">确定上传</el-button>
+                    </el-popover>
+                    <el-button type="primary" size="small" @click="cropperDialogShow=true">裁剪图片</el-button>
+                  </el-col>
+                  <el-col :span="18">
+                    <el-row v-if="fileUrl.length">
+                      <el-col :span="8" v-for="(item, index) in fileUrl" :key="item">
                         <div class="image-box">
                           <img :src="item" class="ad-img">
                           <div class="demo-upload-list-cover">
                             <Icon type="ios-trash-outline" @click.native="handleRemove(index)"></Icon>
                           </div>
                         </div>
-                      </Col>
-                    </Row>
+                      </el-col>
+                    </el-row>
                     <div v-show="!fileUrl.length" class="image-box">
                       <img :src="defaultUploadImgSrc" class="ad-img">
                     </div>
-                  </Col>
-                </Row>
-              </Col>
-              <Col span="6">
+                  </el-col>
+                </el-row>
+              </el-col>
+              <el-col :span="6">
                 <span>只能上传</span>
                 <template v-if="uploadImgMax==3">
                   <strong style="color:red;font-size:20px;">1</strong>
@@ -129,77 +213,77 @@
                 </template>
                 <strong v-else style="color:red;font-size:20px;">1</strong>
                 <span>张图片</span>
-              </Col>
+              </el-col>
             </el-form-item>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="12">
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
             <el-form-item label="开始时间" prop="startTime">
-              <DatePicker type="datetime" :options="startTimeOptions" placeholder="点击选择时间" @on-change="startTimeChange" v-model="startTime" :clearable="false" transfer :start-date="defaultStartTime"></DatePicker>
+              <el-date-picker type="datetime" size="small" :options="startTimeOptions" placeholder="点击选择时间" @on-change="startTimeChange" v-model="startTime" :clearable="false" transfer :start-date="defaultStartTime"></el-date-picker>
             </el-form-item>
-          </Col>
-          <Col span="12">
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="结束时间" prop="endTime">
-              <DatePicker type="datetime" :options="endTimeOptions" placeholder="点击选择时间" @on-change="endTimeChange" v-model="endTime" :clearable="false" transfer></DatePicker>
+              <el-date-picker type="datetime" size="small" :options="endTimeOptions" placeholder="点击选择时间" @on-change="endTimeChange" v-model="endTime" :clearable="false" transfer></el-date-picker>
             </el-form-item>
-          </Col>
-          <!-- <Col span="8">
+          </el-col>
+          <!-- <el-col :span="8">
             <el-form-item label="有效期">
-              <InputNumber :min="1" v-model="effectiveTime"></InputNumber>
+              <el-inputNumber :min="1" v-model="effectiveTime"></el-inputNumber>
               <span>月</span>
             </el-form-item>
-          </Col> -->
-        </Row>
-        <Row>
-          <Col span="12">
+          </el-col> -->
+        </el-row>
+        <el-row>
+          <el-col :span="12">
             <el-form-item label="投放级别" prop="areaType">
-              <Select v-model="formDialog.areaType" placeholder="请选择" transfer disabled>
-                <Option v-for="item in areaType" :key="item.value" :value="item.value">{{item.label}}</Option>
-              </Select>
+              <el-select v-model="formDialog.areaType" size="small" placeholder="请选择" transfer disabled>
+                <el-option v-for="item in areaType" :key="item.value" :label="item.label" :value="item.value"></el-option>
+              </el-select>
             </el-form-item>
-          </Col>
-          <Col span="12">
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="关联地区">
-              <Cascader :data="derail_address_arr" v-model="derail_address_obj" placeholder="选择关联地区" :clearabled="false" transfer></Cascader>
+              <el-cascader :options="derail_address_arr" size="small" v-model="derail_address_obj" placeholder="选择关联地区" :clearabled="false" transfer></el-cascader>
             </el-form-item>
-          </Col>
-        </Row>
-        <Row>
-          <Col span="12">
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
             <el-form-item label="链接类型" prop="type">
-              <Select v-model="formDialog.type" placeholder="请选择" transfer>
-                <Option v-for="item in type" :key="item.value" :value="item.value">{{item.label}}</Option>
-              </Select>
+              <el-select v-model="formDialog.type" placeholder="请选择" size="small" transfer>
+                <el-option v-for="item in type" :key="item.value" :label="item.label" :value="item.value"></el-option>
+              </el-select>
             </el-form-item>
-          </Col>
-          <Col span="12" v-if="formDialog.type==2">
+          </el-col>
+          <el-col :span="12" v-if="formDialog.type==2">
             <el-form-item label="外链地址" prop="href">
-              <Input type="url" v-model="formDialog.href" placeholder="请输入链接地址"></Input>
+              <el-input type="url" size="small" v-model="formDialog.href" placeholder="请输入链接地址"></el-input>
             </el-form-item>
-          </Col>
-        </Row>
-        <Row  v-show="formDialog.type==1">
-          <Col span="24">
+          </el-col>
+        </el-row>
+        <el-row  v-show="formDialog.type==1">
+          <el-col :span="24">
             <ueditor v-model="formDialog.adContent" :config="myConfig"></ueditor>
-          </Col>
-        </Row>
+          </el-col>
+        </el-row>
       </el-form>
       <div slot="footer">
-        <Button @click="resetDialogForm('formDialog')">{{label.clear}}</Button>
-        <Button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading" :disabled="uploadLoading">{{label.submit}}</Button>
+        <el-button @click="resetDialogForm('formDialog')">{{label.clear}}</el-button>
+        <el-button type="primary" @click="submitDialogForm('formDialog')" :loading="dialogSubmitLoading" :disabled="uploadLoading">{{label.submit}}</el-button>
       </div>
-    </Modal>
+    </el-dialog>
 
     <!-- 预览广告内容 -->
-    <Modal v-model="adContentShow" title="内链广告展示" :styles="{top:'30px'}" @on-cancel="adContentShow=false;adContent=''">
+    <el-dialog :visible.sync="adContentShow" title="内链广告展示" :styles="{top:'30px'}" @closed="adContentShow=false;adContent=''">
       <div class="preview-editor-content" v-html="adContent"></div>
       <div slot="footer">
-        <Button @click="adContentShow=false;adContent=''">{{label.close}}</Button>
+        <el-button @click="adContentShow=false;adContent=''">{{label.close}}</el-button>
       </div>
-    </Modal>
+    </el-dialog>
     <!-- 图片裁剪 -->
-    <Modal v-model="cropperDialogShow" title="裁剪上传" :styles="{top:'30px'}" :mask-closable="false" @on-cancel="resetCropperDialog" width="700">
+    <el-dialog :visible.sync="cropperDialogShow" title="裁剪上传" :styles="{top:'30px'}" :mask-closable="false" @closed="resetCropperDialog" width="700">
       <div class="cutting">
         <Upload type="drag" action="" :before-upload="beforeUpload" accept=".jpg,.jpeg,.png,.gif">
           <div style="padding: 20px 0">
@@ -211,72 +295,72 @@
           <img id="myImg" :src="cropperImgSrc" alt="" style="max-width: 100%;max-height:500px;">
         </div>
         <div style="margin-top: 15px;">
-          <Button :type="which == 'banner' ? 'primary' : 'default'" @click="initCropper('banner')">
+          <el-button :type="which == 'banner' ? 'primary' : 'default'" @click="initCropper('banner')">
             <Tooltip>
               <span>banner</span>
               <p slot="content"  style="white-space: normal;">{{requiredSize['banner']}}</p>
             </Tooltip>
-          </Button>
-          <Button :type="which == 'one' ? 'primary' : 'default'" @click="initCropper('one')">
+          </el-button>
+          <el-button :type="which == 'one' ? 'primary' : 'default'" @click="initCropper('one')">
             <Tooltip>
               <span>单图</span>
               <p slot="content"  style="white-space: normal;">{{requiredSize['one']}}</p>
             </Tooltip>
-          </Button>
-          <Button :type="which == 'main' ? 'primary' : 'default'" @click="initCropper('main')">
+          </el-button>
+          <el-button :type="which == 'main' ? 'primary' : 'default'" @click="initCropper('main')">
             <Tooltip>
               <span>主图</span>
               <p slot="content"  style="white-space: normal;">{{requiredSize['main']}}</p>
             </Tooltip>
-          </Button>
-          <Button :type="which == 'secondary' ? 'primary' : 'default'" @click="initCropper('secondary')">
+          </el-button>
+          <el-button :type="which == 'secondary' ? 'primary' : 'default'" @click="initCropper('secondary')">
             <Tooltip>
               <span>次级图片</span>
               <p slot="content"  style="white-space: normal;">{{requiredSize['secondary']}}</p>
             </Tooltip>
-          </Button>
+          </el-button>
         </div>
         <Form inline :label-width="100" style="margin-top: 15px;">
-          <FormItem label="自定义宽度(px)">
-            <InputNumber :min="100" v-model="selfWidth" placeholder="自定义宽度"></InputNumber>
-          </FormItem>
-          <FormItem label="自定义高度(px)">
-            <InputNumber :min="50" v-model="selfHeight" placeholder="自定义高度"></InputNumber>
-          </FormItem>
-          <Button type="primary" @click="setProportion">设置自定义宽高</Button>
+          <el-form-item label="自定义宽度(px)">
+            <el-inputNumber :min="100" v-model="selfWidth" placeholder="自定义宽度"></el-inputNumber>
+          </el-form-item>
+          <el-form-item label="自定义高度(px)">
+            <el-inputNumber :min="50" v-model="selfHeight" placeholder="自定义高度"></el-inputNumber>
+          </el-form-item>
+          <el-button type="primary" @click="setProportion">设置自定义宽高</el-button>
           <div>
-            <Button type="primary" @click="resetCropper2" style="margin-right: 15px;">重置裁剪</Button>
-            <Button type="primary" @click="beSureCropper" style="margin-right: 15px;">确定裁剪</Button>
-            <Button type="primary" @click="myUpload" :loading="uploadLoading" style="margin-right: 15px;">
+            <el-button type="primary" @click="resetCropper2" style="margin-right: 15px;">重置裁剪</el-button>
+            <el-button type="primary" @click="beSureCropper" style="margin-right: 15px;">确定裁剪</el-button>
+            <el-button type="primary" @click="myUpload" :loading="uploadLoading" style="margin-right: 15px;">
               <Tooltip>
                 <span>确定上传</span>
                 <p slot="content"  style="white-space: normal;">{{imgRequiredTxt}}</p>
               </Tooltip>
-            </Button>
+            </el-button>
           </div>
         </Form>
         <Form :label-width="100" style="margin-top: 15px;">
-          <FormItem label="上传的图片">
-            <Row v-if="fileUrl.length">
-              <Col span="8" v-for="(item, index) in fileUrl" :key="item">
+          <el-form-item label="上传的图片">
+            <el-row v-if="fileUrl.length">
+              <el-col :span="8" v-for="(item, index) in fileUrl" :key="item">
                 <div class="image-box">
                   <img :src="item" class="ad-img">
                   <div class="demo-upload-list-cover">
                     <Icon type="ios-trash-outline" @click.native="handleRemove(index)"></Icon>
                   </div>
                 </div>
-              </Col>
-            </Row>
+              </el-col>
+            </el-row>
             <div v-show="!fileUrl.length" class="image-box">
               <img :src="defaultUploadImgSrc" class="ad-img">
             </div>
-          </FormItem>
+          </el-form-item>
         </Form>
       </div>
       <div slot="footer">
-        <Button @click="resetCropperDialog">{{label.close}}</Button>
+        <el-button @click="resetCropperDialog">{{label.close}}</el-button>
       </div>
-    </Modal>
+    </el-dialog>
   </div>
 </template>
 
@@ -561,7 +645,7 @@
               if(key==1){
                 // 内链
                 var adContent = params.row.adContent
-                label = 'Button'
+                label = 'el-button'
                 _params = {
                   props: {
                     type: 'primary',
@@ -798,7 +882,7 @@
               // if(status=!3){
                 var txt = status == 1 ? '禁用' : '启用'
                 var type = status == 1 ? 'warning' : 'success'
-                var btn = create('Button', {
+                var btn = create('el-button', {
                   props: {
                     type: type,
                     size: 'small'
@@ -843,12 +927,32 @@
       }
     },
     methods: {
-      addRow () {
-        // 时间要手动选
-        // this.initTimes()
-        this.currDialog = 'add'
-        this.dialogShow = true
+      getAreaTxt(data){
+        var vm=this,txt = ''
+        if(data instanceof Object){
+          var areaType = data.areaType
+          if(areaType==1){
+            txt = '全国'
+          }else{
+            var arr =[],map={2:'省',3:'市',4:'区'}
+            if(areaType==2){
+              arr = [data.provincesId]
+            }else if(areaType==3){
+              arr = [parseInt(data.cityId/10000)*10000,data.cityId]
+            }else if(areaType==4){
+              arr = [parseInt(data.areaId/10000)*10000, parseInt(data.areaId/100)*100, data.areaId]
+            }
+            txt = map[areaType] + '： ' + vm.util.getProvinceCityArea(arr,vm.chinaJson,true)
+          }
+        }
+        return txt
       },
+      // addRow () {
+      //   // 时间要手动选
+      //   // this.initTimes()
+      //   this.currDialog = 'add'
+      //   this.dialogShow = true
+      // },
       // 初始化结束时间
       initEndTime(date,effectiveTime){
         var vm = this,
@@ -873,7 +977,10 @@
           vm.adContent = content
           vm.adContentShow = true
         }else{
-          vm.$Message.info('内容为空')
+          vm.$message({
+            showClose: true,
+            message: '内容为空'
+          });
         }
       },
       updateSelect(selection){
@@ -891,7 +998,11 @@
           endTime = vm.searchEndTime
         var iseffective = vm.inEffectiveTime(startTime,endTime)
         if(endTime&&!iseffective){
-          vm.$Message.error('您所选的开始时间大于结束时间，请重新选择！')
+          vm.$message({
+            showClose: true,
+            type: 'error',
+            message: '您所选的开始时间大于结束时间，请重新选择！'
+          });
           vm.formSearch.startTime = ''
           vm.searchStartTime = ''
         }else{
@@ -904,7 +1015,11 @@
           endTime = vm.searchEndTime
         var iseffective = vm.inEffectiveTime(startTime,endTime)
         if(startTime&&!iseffective){
-          vm.$Message.error('您所选的结束时间小于开始时间，请重新选择！')
+          vm.$message({
+            showClose: true,
+            type: 'error',
+            message: '您所选的结束时间小于开始时间，请重新选择！'
+          });
           vm.formSearch.endTime = ''
           vm.searchEndTime = ''
         }else{
@@ -923,7 +1038,11 @@
         vm.startTime = startTime
         var iseffective = vm.inEffectiveTime(startTime,endTime)
         if(endTime&&!iseffective){
-          vm.$Message.error('您所选的开始时间大于结束时间，请重新选择！')
+          vm.$message({
+            showClose: true,
+            type: 'error',
+            message: '您所选的开始时间大于结束时间，请重新选择！'
+          });
           vm.formDialog.startTime = ''
           vm.startTime = ''
         }else{
@@ -936,7 +1055,11 @@
           endTime = vm.endTime
         var iseffective = vm.inEffectiveTime(startTime,endTime)
         if(startTime&&!iseffective){
-          vm.$Message.error('您所选的结束时间小于开始时间，请重新选择！')
+          vm.$message({
+            showClose: true,
+            type: 'error',
+            message: '您所选的结束时间小于开始时间，请重新选择！'
+          });
           vm.formDialog.endTime = ''
           vm.endTime = ''
         }else{
@@ -982,11 +1105,17 @@
         vm.$refs[name].validate(function (valid) {
           if (valid) {
             if(!vm.formDialog.startTime){
-              vm.$Message.info('请选择开始时间！')
+              vm.$message({
+                showClose: true,
+                message: '请选择开始时间！'
+              });
               return
             }
             if(!vm.formDialog.endTime){
-              vm.$Message.info('请选择结束时间！')
+              vm.$message({
+                showClose: true,
+                message: '请选择结束时间！'
+              });
               return
             }
             if (vm.initPostDialog) {
@@ -1026,7 +1155,11 @@
                   }
                   vm.selfSubmit(params,name)
                 }else{
-                  vm.$Message.error(resData.message)
+                  vm.$message({
+                    showClose: true,
+                    type: 'error',
+                    message: resData.message || 'sourceId获取失败'
+                  });
                 }
               }).catch(err=>{})
             }
@@ -1039,7 +1172,11 @@
           vm.dialogSubmitLoading = false
           var resData = res.data
           if(resData.code==1){
-            vm.$Message.success(vm.label[vm.currDialog]+'成功!')
+            vm.$message({
+              showClose: true,
+              type: 'success',
+              message: vm.label[vm.currDialog]+'成功!'
+            });
             if(vm.currDialog=='add'){
               vm.paging(1);
             }else{
@@ -1054,7 +1191,11 @@
               vm.updateOther()
             }
           }else{
-            vm.$Message.error(vm.label[vm.currDialog]+'失败: ' + resData.message)
+            vm.$message({
+              showClose: true,
+              type: 'error',
+              message: vm.label[vm.currDialog]+'失败: ' + resData.message
+            });
           }
         }).catch(err=>{})
       },
@@ -1067,10 +1208,18 @@
         }).then(res => {
           var resData = res.data
           if(resData.code==1){
-            vm.$Message.success('操作成功！')
+            vm.$message({
+              showClose: true,
+              type: 'success',
+              message: '操作成功！'
+            });
             vm.paging()
           }else{
-            vm.$Message.error(resData.message)
+            vm.$message({
+              showClose: true,
+              type: 'error',
+              message: resData.message || '操作失败！'
+            });
           }
         }).catch(err=>{
 
@@ -1177,10 +1326,11 @@
         var vm = this;
         var imgTestResult = vm.imgTest(file)
         if(!imgTestResult.code){
-          vm.$Message.error({
-            content: imgTestResult.message,
-            duration: 3
-          })
+          vm.$message({
+            showClose: true,
+            type: 'error',
+            message: imgTestResult.message
+          });
           return false
         }
         let reader = new FileReader()
@@ -1209,7 +1359,11 @@
         // 确认上传
         var vm = this
         if(!vm.uploadImgArr.length){
-          vm.$Message.error('请先选择上传的图片')
+          vm.$message({
+            showClose: true,
+            type: 'error',
+            message: '请先选择上传的图片'
+          });
           return
         }
         vm.uploadLoading = true
@@ -1255,7 +1409,11 @@
             // 清空已上传数组
             vm.fileUrl = [];
             vm.uploadImgArr = [];
-            vm.$Message.success('上传图片成功！');
+            vm.$message({
+              showClose: true,
+              type: 'success',
+              message: '上传图片成功！'
+            });
             var arr = []
             var data = rd.data
             for(let key in data){
@@ -1267,12 +1425,20 @@
             // vm.formDialog.imagePath = arr.join(',')
             vm.uploadLoading = false
           }else{
-            vm.$Message.error(rd.message)
+            vm.$message({
+              showClose: true,
+              type: 'error',
+              message: rd.message || '上传图片失败！'
+            });
           }
         }).catch(err=>{})
       },
       handleFormatError(){
-        this.$Message.error('文件格式错误，请选择jpg、jpeg、png或gif格式的文件！')
+        this.$message({
+          showClose: true,
+          type: 'error',
+          message: '文件格式错误，请选择jpg、jpeg、png或gif格式的文件！'
+        });
       },
       handleRemove(index){
         var vm = this
@@ -1296,10 +1462,6 @@
       // 删除行
       delRow (data) {
         var vm = this;
-        if(!data.id){
-          vm.$Message.error('id获取失败')
-          return
-        }
         var parmas = {
           method: 'post',
           url: vm.url.delete,
@@ -1332,11 +1494,19 @@
         vm.$http2(parmas).then(res=>{
           var resData = res.data
           if(resData.code==1){
-            vm.$Message.success('操作成功');
+            vm.$message({
+              showClose: true,
+              type: 'success',
+              message: '操作成功'
+            });
             vm.batchIdArr = []
             vm.paging()
           }else{
-            vm.$Message.error(resData.message);
+            vm.$message({
+              showClose: true,
+              type: 'error',
+              message: resData.message || '操作失败'
+            });
           }
         }).catch(err=>{})
       },
